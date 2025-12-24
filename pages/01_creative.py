@@ -25,32 +25,31 @@ WAREHOUSE = {
 }
 GALLERY_FILE = "gallery/inspirations.txt"
 
-# --- 2. 核心函数 ---
 def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
-    if not user_intent or not user_intent.strip():
-        return random.choice(inventory) if inventory else "空"
-        # 📍 映射核心：0-100 映射为 0.0-1.0
-        # 55分对应 0.55，属于稳健中带点惊喜
-        temp_score = float(chaos_val) / 100.0
+    # 📍 映射核心必须放在最前面，确保全局可用
+    temp_score = float(chaos_val) / 100.0 
     
-    prompt = f"意图：{user_intent}\n分类：{category}\n词库：{inventory}\n任务：1. 如果分类是 Subject 或 Action，请挑出 2-3 个最相关的词，用逗号隔开。2. 其他分类选2~3个最精准的词。只返回词汇。"
-    try:
-        res = client.chat.completions.create(model="deepseek-chat", messages=[{"role": "user", "content": prompt}], temperature=temp_score)
-        return res.choices[0].message.content.strip()
-    except Exception as e: 
+    # 如果没输入意图，直接随机拿两个词
+    if not user_intent or not user_intent.strip():
         if inventory:
             return "，".join(random.sample(inventory, min(len(inventory), 2)))
         return "空"
-
-def get_github_data(path):
-    url = f"https://api.github.com/repos/{REPO}/contents/{path}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    
+    # 💡 这里的 Prompt 已经根据你的要求加强
+    prompt = f"意图：{user_intent}\n分类：{category}\n词库：{inventory}\n任务：1. 如果分类是 Subject 或 Action，请挑出 2-3 个相关的词。2. 其他分类选 1-2 个词。词与词之间用逗号隔开。只返回词汇。"
+    
     try:
-        resp = requests.get(url, headers=headers, timeout=10)
-        if resp.status_code == 200:
-            return [line.strip() for line in base64.b64decode(resp.json()['content']).decode().splitlines() if line.strip()]
-    except: pass
-    return []
+        res = client.chat.completions.create(
+            model="deepseek-chat", 
+            messages=[{"role": "user", "content": prompt}], 
+            temperature=temp_score # 🎯 审美光谱正式映射到核心
+        )
+        return res.choices[0].message.content.strip()
+    except Exception as e:
+        # 兜底逻辑：如果 AI 罢工，随机抓两个凑数
+        if inventory:
+            return "，".join(random.sample(inventory, min(len(inventory), 2)))
+        return "空"
 
 def save_to_github(path, data_list):
     url = f"https://api.github.com/repos/{REPO}/contents/{path}"
