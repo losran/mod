@@ -7,6 +7,9 @@ import requests
 import base64
 from openai import OpenAI
 from style_manager import apply_pro_style
+# 🚑 强制修复 session_state 被污染的问题
+if not hasattr(st, "session_state") or not isinstance(st.session_state, dict):
+    st.session_state = {}
 
 # 📍 视觉样式同步
 st.set_page_config(layout="wide", page_title="Creative Engine")
