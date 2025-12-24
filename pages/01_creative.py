@@ -26,14 +26,20 @@ WAREHOUSE = {
 GALLERY_FILE = "gallery/inspirations.txt"
 
 # --- 2. 核心函数 ---
-def smart_sample_with_ai(category, user_intent, inventory):
+def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
     if not user_intent or not user_intent.strip():
         return random.choice(inventory) if inventory else "空"
-    prompt = f"意图：{user_intent}\n分类：{category}\n词库：{inventory}\n任务：选几个词。只返回词汇。"
+        # 📍 映射核心：0-100 映射为 0.0-1.0
+    # 55分对应 0.55，属于稳健中带点惊喜
+    temp_score = float(chaos_val) / 100.0
+    
+    prompt = f"意图：{user_intent}\n分类：{category}\n词库：{inventory}\n任务：1. 如果分类是 Subject 或 Action，请挑出 2-3 个最相关的词，用逗号隔开。2. 其他分类选2~3个最精准的词。只返回词汇。"
     try:
-        res = client.chat.completions.create(model="deepseek-chat", messages=[{"role": "user", "content": prompt}], temperature=0.8)
+        res = client.chat.completions.create(model="deepseek-chat", messages=[{"role": "user", "content": prompt}], temperature=temp_score)
         return res.choices[0].message.content.strip()
-    except: return random.choice(inventory)
+    except: if inventory:
+            return "，".join(random.sample(inventory, min(len(inventory), 2)))
+        return "空"
 
 def get_github_data(path):
     url = f"https://api.github.com/repos/{REPO}/contents/{path}"
@@ -125,11 +131,11 @@ with col_main:
         with st.spinner("AI 精准挑词中..."):
             new_batch = []
             for _ in range(num):
-                s = smart_sample_with_ai("Subject", intent_input, db_all["Subject"])
-                a = smart_sample_with_ai("Action", intent_input, db_all["Action"])
-                st_val = smart_sample_with_ai("Style", intent_input, db_all["Style"])
-                m = smart_sample_with_ai("Mood", intent_input, db_all["Mood"])
-                u = smart_sample_with_ai("Usage", intent_input, db_all["Usage"])
+                s = smart_sample_with_ai("Subject", intent_input, db_all["Subject"], chaos_level)
+                a = smart_sample_with_ai("Action", intent_input, db_all["Action"], chaos_level)
+                st_val = smart_sample_with_ai("Style", intent_input, db_all["Style"], chaos_level)
+                m = smart_sample_with_ai("Mood", intent_input, db_all["Mood"], chaos_level)
+                u = smart_sample_with_ai("Usage", intent_input, db_all["Usage"], chaos_level)
                 new_batch.append(f"{s}，{a}，{st_val}风格，{m}氛围，纹在{u}")
             st.session_state.generated_cache = new_batch
         st.rerun()
