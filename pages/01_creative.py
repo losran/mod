@@ -7,9 +7,6 @@ import requests
 import base64
 from openai import OpenAI
 from style_manager import apply_pro_style
-# 🚑 强制修复 session_state 被污染的问题
-if not hasattr(st, "session_state") or not isinstance(st.session_state, dict):
-    st.session_state = {}
 
 # 📍 视觉样式同步
 st.set_page_config(layout="wide", page_title="Creative Engine")
@@ -53,7 +50,7 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
         return []
 
         # 物理层洗牌，确保每次 AI 看到的词顺序都不同，打破雷同
-    shuffled_pool = random.sample(inventory, min(len(inventory), 40))
+shuffled_pool = random.sample(inventory, min(len(inventory), 40))
            
     # 2. 情况 A：如果没有意图，直接返回随机组合
     if not user_intent or not user_intent.strip():
@@ -93,7 +90,8 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
         # ✅ 关键修改：不再返回字符串，而是【词列表】
         raw = res.choices[0].message.content.strip()
         words = [w.strip() for w in raw.replace("，", ",").split(",") if w.strip()]
-        return words
+        valid = [w for w in words if w in shuffled_pool]
+        return valid if valid else random.sample(shuffled_pool, 1)
         
     except Exception:
         # 兜底也返回【词列表】
@@ -118,7 +116,7 @@ def save_to_github(path, data_list):
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     try:
         get_resp = requests.get(url, headers=headers, timeout=10).json()
-        content_str = "\n".join(list(set(data_list)))
+        content_str = "\n".join(dict.fromkeys(data_list))
         b64_content = base64.b64encode(content_str.encode()).decode()
         requests.put(url, headers=headers, json={"message": "update", "content": b64_content, "sha": get_resp.get('sha')}, timeout=15)
         return True
@@ -139,50 +137,12 @@ if "polished_text" not in st.session_state or not isinstance(st.session_state.po
 
         
 # 🔒 定义全局锁定状态
-is_working = len(st.session_state.polished_text) > 0
+if "is_working" not in st.session_state:
+    st.session_state.is_working = False
+
 
 st.title("🎨 创意引擎")
 col_main, col_gallery = st.columns([5, 2.5])
-
-# --- 🟢 右侧：仓库管理 (上) + 历史记录 (下) ---
-with col_gallery:
-    st.subheader("📦 仓库管理")
-    mode = st.radio("模式", ["素材仓库", "灵感成品"], horizontal=True)
-    
-    # 1. 仓库管理容器
-    with st.container(height=300, border=True):
-        if mode == "素材仓库":
-            cat = st.selectbox("分类", list(WAREHOUSE.keys()))
-            words = get_github_data(WAREHOUSE[cat])
-            if words:
-                for w in words:
-                    if st.checkbox(f" {w}", key=f"cat_{cat}_{w}", disabled=is_working):
-                        if not is_working and w not in st.session_state.selected_prompts:
-                            st.session_state.selected_prompts.append(w)
-        else:
-            insps = get_github_data(GALLERY_FILE)
-            if insps:
-                for i in insps:
-                    if st.checkbox(i, key=f"insp_lib_{abs(hash(i))}", disabled=is_working):
-                        if not is_working and i not in st.session_state.selected_prompts:
-                            st.session_state.selected_prompts.append(i)
-
-    # 📜 历史档案区 (永驻下方)
-    st.divider()
-    st.subheader("📜 历史档案")
-    if st.session_state.history_log:
-        with st.container(height=400, border=True):
-            for h_idx, h_text in enumerate(st.session_state.history_log):
-                is_checked = h_text in st.session_state.selected_prompts
-                if st.checkbox(f"备选 {h_idx+1}: {h_text}", key=f"h_l_{h_idx}", value=is_checked, disabled=is_working):
-                    if not is_working:
-                        if h_text not in st.session_state.selected_prompts:
-                            st.session_state.selected_prompts.append(h_text)
-                            st.rerun()
-        
-        if st.button("🗑️ 清空历史", use_container_width=True, disabled=is_working):
-            st.session_state.history_log = []
-            st.rerun()
 
 
 # --- 🔵 左侧：核心生成区 ---
