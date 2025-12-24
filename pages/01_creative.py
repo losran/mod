@@ -230,7 +230,7 @@ if execute_button:
                 + f"纹在{'，'.join(u)}"
             )
 
-        st.session_state.generated_cache = new_batch
+        st.session_state["generated_cache"] = new_batch
         st.rerun()
 
     # 🎲 方案筛选 (中间桌面)
