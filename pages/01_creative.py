@@ -24,6 +24,13 @@ WAREHOUSE = {
     "Usage": "data/usage.txt"
 }
 GALLERY_FILE = "gallery/inspirations.txt"
+def chaos_pick(chaos, low, mid, high):
+    if chaos < 30:
+        return random.randint(*low)
+    elif chaos < 70:
+        return random.randint(*mid)
+    else:
+        return random.randint(*high)
 
 def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
     # 1. 映射计算与物理洗牌
@@ -177,13 +184,42 @@ with col_main:
             styles   = smart_sample_with_ai("Style", intent_input, db_all["Style"], chaos_level)
             moods    = smart_sample_with_ai("Mood", intent_input, db_all["Mood"], chaos_level)
             usages   = smart_sample_with_ai("Usage", intent_input, db_all["Usage"], chaos_level)
+
+
+
+            usage_groups = {
+                "手臂系": [u for u in usages if "手" in u or "臂" in u],
+                "耳后系": [u for u in usages if "耳" in u or "颈" in u],
+                "锁骨系": [u for u in usages if "锁骨" in u]
+            }
             
+            # 先生成 valid_groups
+            valid_groups = [g for g in usage_groups.values() if g]
+            
+            # 兜底：如果三个体系都没命中，就退回原 usages
+            if not valid_groups:
+                valid_groups = [usages]
+
+
+            # 💡 更改取词逻辑
             for _ in range(num):
-                s = random.sample(subjects, min(1, len(subjects)))
-                a = random.sample(actions,  min(1, len(actions)))
-                st_val = random.sample(styles, min(1, len(styles)))
-                m = random.sample(moods, min(1, len(moods)))
-                u = random.sample(usages, min(1, len(usages)))
+                s = random.sample(subjects, min(len(subjects), random.randint(2, 4)))
+                a = random.sample(actions,  min(len(actions),  random.randint(1, 2)))
+                st_count = chaos_pick(chaos_level, (2, 3), (3, 4), (4, 5))
+                m_count  = chaos_pick(chaos_level, (1, 2), (2, 3), (3, 4))
+                
+                st_val = random.sample(styles, min(len(styles), st_count))
+                m = random.sample(moods, min(len(moods), m_count))
+                # --- Usage 固定为三大体系 ---
+
+                
+                # 随机选一个体系
+                valid_groups = [g for g in usage_groups.values() if g]
+                chosen_group = random.choice(valid_groups)
+                
+                # 从该体系中取 1 个
+                u = random.sample(chosen_group, 1)
+
 
                 new_batch.append(f"{'，'.join(s)}，{'，'.join(a)}，{'，'.join(st_val)}风格，{'，'.join(m)}氛围，纹在{'，'.join(u)}")
             st.session_state.generated_cache = new_batch
