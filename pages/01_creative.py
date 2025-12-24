@@ -29,9 +29,9 @@ GALLERY_FILE = "gallery/inspirations.txt"
 def smart_sample_with_ai(category, user_intent, inventory):
     if not user_intent or not user_intent.strip():
         return random.choice(inventory) if inventory else "空"
-    prompt = f"意图：{user_intent}\n分类：{category}\n词库：{inventory}\n任务：选一个词。只返回词汇。"
+    prompt = f"意图：{user_intent}\n分类：{category}\n词库：{inventory}\n任务：选几个词。只返回词汇。"
     try:
-        res = client.chat.completions.create(model="deepseek-chat", messages=[{"role": "user", "content": prompt}], temperature=0.3)
+        res = client.chat.completions.create(model="deepseek-chat", messages=[{"role": "user", "content": prompt}], temperature=0.8)
         return res.choices[0].message.content.strip()
     except: return random.choice(inventory)
 
