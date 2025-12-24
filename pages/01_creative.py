@@ -105,7 +105,12 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
         
 
 def get_github_data(path):
-    url = f"https://api.github.com/repos/{REPO}/contents/{path}"
+    
+    import time
+
+    url = f"https://api.github.com/repos/{REPO}/contents/{path}?t={int(time.time())}"
+
+    #url = f"https://api.github.com/repos/{REPO}/contents/{path}"
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     try:
         resp = requests.get(url, headers=headers, timeout=10)
