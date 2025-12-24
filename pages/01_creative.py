@@ -96,7 +96,9 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
         words = [w.strip() for w in raw.replace("，", ",").split(",") if w.strip()]
          # 只保留在池子里的词
         valid = [w for w in words if w in shuffled_pool]
-        return words
+        #return words
+        return valid if valid else random.sample(shuffled_pool, 1)
+
         
     except Exception:
         # 兜底也返回【词列表】
@@ -130,11 +132,10 @@ def save_to_github(path, data_list):
 # --- 3. UI 布局与 Session 初始化 ---
 st.set_page_config(layout="wide", page_title="Creative Engine")
 
-# 💡 初始化核心变量
-for key in ['selected_prompts', 'generated_cache', 'history_log', 'polished_text', 'manual_editor']:
+for key in ['selected_prompts', 'generated_cache', 'polished_text', 'manual_editor']:
     if key not in st.session_state:
         st.session_state[key] = "" if 'editor' in key or 'text' in key else []
-        
+
 # 🔒 定义全局锁定状态
 is_working = len(st.session_state.polished_text) > 0
 
@@ -150,7 +151,11 @@ with col_gallery:
     with st.container(height=300, border=True):
         if mode == "素材仓库":
             cat = st.selectbox("分类", list(WAREHOUSE.keys()))
-            words = get_github_data(WAREHOUSE[cat])
+            #words = get_github_data(WAREHOUSE[cat])
+            raw_words = get_github_data(WAREHOUSE[cat])
+            warehouse_set = set(raw_words)
+            words = [w for w in raw_words if w in warehouse_set]
+
             if words:
                 for w in words:
                     if st.checkbox(f" {w}", key=f"cat_{cat}_{w}", disabled=is_working):
@@ -164,22 +169,6 @@ with col_gallery:
                         if not is_working and i not in st.session_state.selected_prompts:
                             st.session_state.selected_prompts.append(i)
 
-    # 📜 历史档案区 (永驻下方)
-    st.divider()
-    st.subheader("📜 历史档案")
-    if st.session_state.history_log:
-        with st.container(height=400, border=True):
-            for h_idx, h_text in enumerate(st.session_state.history_log):
-                is_checked = h_text in st.session_state.selected_prompts
-                if st.checkbox(f"备选 {h_idx+1}: {h_text}", key=f"h_l_{h_idx}", value=is_checked, disabled=is_working):
-                    if not is_working:
-                        if h_text not in st.session_state.selected_prompts:
-                            st.session_state.selected_prompts.append(h_text)
-                            st.rerun()
-        
-        if st.button("🗑️ 清空历史", use_container_width=True, disabled=is_working):
-            st.session_state.history_log = []
-            st.rerun()
 
 # --- 🔵 左侧：核心生成区 ---
 with col_main:
@@ -263,24 +252,7 @@ with col_main:
                 st.session_state.generated_cache = []; st.session_state.selected_prompts = []
                 st.rerun()
 
-# --- 🔵 精准加固后的润色逻辑 ---
-    if st.session_state.selected_prompts and not st.session_state.polished_text:
-        st.divider()
-        if st.button("✨ 确认方案并开始润色", type="primary", use_container_width=True):
-            # 1. 强制归档：将生成的 cache 中未选中的方案移入 history_log
-            try:
-                if 'generated_cache' in st.session_state and st.session_state.generated_cache:
-                    abandoned = [p for p in st.session_state.generated_cache if p not in st.session_state.selected_prompts]
-                    if abandoned:
-                        # 确保 history_log 是列表并追加
-                        if not isinstance(st.session_state.history_log, list):
-                            st.session_state.history_log = []
-                        st.session_state.history_log = abandoned + st.session_state.history_log
-                    
-                    # 清空当前展示，完成“迁移”视觉效果
-                    st.session_state.generated_cache = []
-            except Exception as e:
-                st.error(f"归档过程出错: {e}")
+    st.session_state.generated_cache = []
 
             # 2. 执行润色
             with st.spinner("AI 注入灵魂中..."):
@@ -306,7 +278,13 @@ with col_main:
                     )
                     
                     st.session_state.polished_text = response.choices[0].message.content
+
+                    # 🔥 清空生成态
+                    st.session_state.generated_cache = []
+                    st.session_state.selected_prompts = []
+                    
                     st.rerun()
+
                 except Exception as e:
                     st.error(f"润色失败原因: {e}")
                     # 如果失败了，建议不要清空 generated_cache，让用户可以重试
