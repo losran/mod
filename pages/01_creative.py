@@ -182,7 +182,7 @@ with col_main:
     intent_input = st.text_area("意图输入", placeholder="比如：青蛙，日式 old school")
     execute_button = st.button("🔥 激发创意组合", type="primary", use_container_width=True)
 
-if st.button("🔥 激发创意组合", type="primary", use_container_width=True):
+if execute_button:
     st.session_state.polished_text = ""  # 解锁
     db_all = {k: get_github_data(v) for k, v in WAREHOUSE.items()}
 
