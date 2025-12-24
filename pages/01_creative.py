@@ -17,13 +17,30 @@ GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 REPO = "losran/tattoo-ai-tool"
 
 WAREHOUSE = {
-    "Subject": "data/subjects.txt", 
-    "Action": "data/actions.txt", 
-    "Style": "data/styles.txt", 
-    "Mood": "data/moods.txt", 
-    "Usage": "data/usage.txt"
+    "Subject": "data/subjects.txt",
+    "Action": "data/actions.txt",
+    "Mood": "data/moods.txt",
+    "Usage": "data/usage.txt",
+
+    # 👇 新增的风格分层
+    "StyleSystem": "data/styles_system.txt",
+    "Technique": "data/styles_technique.txt",
+    "Color": "data/styles_color.txt",
+    "Texture": "data/styles_texture.txt",
+    "Composition": "data/styles_composition.txt",
+    "Accent": "data/styles_accent.txt"
 }
+
 GALLERY_FILE = "gallery/inspirations.txt"
+
+def chaos_pick(chaos, low, mid, high):
+    if chaos < 30:
+        return random.randint(*low)
+    elif chaos < 70:
+        return random.randint(*mid)
+    else:
+        return random.randint(*high)
+
 
 def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
     # 1. 映射计算与物理洗牌
@@ -160,33 +177,60 @@ with col_gallery:
 
 # --- 🔵 左侧：核心生成区 ---
 with col_main:
-    col_cfg1, col_cfg2 = st.columns(2)
-    with col_cfg1: num = st.slider("生成方案数量", 1, 10, 6)
-    with col_cfg2: chaos_level = st.slider("混乱程度", 0, 100, 55)
-    
-    intent_input = st.text_area("✍️ 组合意图输入框", value=st.session_state.manual_editor, disabled=is_working)
-    st.session_state.manual_editor = intent_input
+    chaos_level = st.slider("混乱度", 0, 100, 55)
+    num = st.number_input("生成数量", 1, 10, 6)
+    intent_input = st.text_area("意图输入", placeholder="比如：青蛙，日式 old school")
+    execute_button = st.button("🔥 激发创意组合", type="primary", use_container_width=True)
 
-    # 💡 激发逻辑：只更新中间桌面，不进历史
-    if st.button("🔥 激发创意组合", type="primary", use_container_width=True, disabled=is_working):
-        db_all = {k: get_github_data(v) for k, v in WAREHOUSE.items()}
-        with st.spinner("AI 精准挑词中..."):
-            new_batch = []
-            subjects = smart_sample_with_ai("Subject", intent_input, db_all["Subject"], chaos_level)
-            actions  = smart_sample_with_ai("Action", intent_input, db_all["Action"], chaos_level)
-            styles   = smart_sample_with_ai("Style", intent_input, db_all["Style"], chaos_level)
-            moods    = smart_sample_with_ai("Mood", intent_input, db_all["Mood"], chaos_level)
-            usages   = smart_sample_with_ai("Usage", intent_input, db_all["Usage"], chaos_level)
-            
-            for _ in range(num):
-                s = random.sample(subjects, min(1, len(subjects)))
-                a = random.sample(actions,  min(1, len(actions)))
-                st_val = random.sample(styles, min(1, len(styles)))
-                m = random.sample(moods, min(1, len(moods)))
-                u = random.sample(usages, min(1, len(usages)))
+if execute_button:
+    st.session_state.polished_text = ""  # 解锁
+    db_all = {k: get_github_data(v) for k, v in WAREHOUSE.items()}
 
-                new_batch.append(f"{'，'.join(s)}，{'，'.join(a)}，{'，'.join(st_val)}风格，{'，'.join(m)}氛围，纹在{'，'.join(u)}")
-            st.session_state.generated_cache = new_batch
+    with st.spinner("🚀 灵感爆发中..."):
+        new_batch = []
+
+        # ===== ① 从分层仓库取词（第三步）=====
+        subjects = smart_sample_with_ai("Subject", intent_input, db_all["Subject"], chaos_level)
+        actions  = smart_sample_with_ai("Action",  intent_input, db_all["Action"],  chaos_level)
+        moods    = smart_sample_with_ai("Mood",    intent_input, db_all["Mood"],    chaos_level)
+        usages   = smart_sample_with_ai("Usage",   intent_input, db_all["Usage"],   chaos_level)
+
+        style_system  = smart_sample_with_ai("StyleSystem",  intent_input, db_all["StyleSystem"],  chaos_level)
+        style_tech    = smart_sample_with_ai("Technique",    intent_input, db_all["Technique"],    chaos_level)
+        style_color   = smart_sample_with_ai("Color",        intent_input, db_all["Color"],        chaos_level)
+        style_texture = smart_sample_with_ai("Texture",      intent_input, db_all["Texture"],      chaos_level)
+        style_comp    = smart_sample_with_ai("Composition",  intent_input, db_all["Composition"],  chaos_level)
+        style_accent  = smart_sample_with_ai("Accent",       intent_input, db_all["Accent"],       chaos_level)
+
+        # ===== ② chaos → 取词数量映射 =====
+        for _ in range(num):
+            s  = random.sample(subjects, min(len(subjects), 1))
+            a  = random.sample(actions,  min(len(actions), chaos_pick(chaos_level, (1,1),(1,2),(2,3))))
+            m  = random.sample(moods,    min(len(moods),   chaos_pick(chaos_level, (1,2),(2,3),(3,4))))
+
+            ss = random.sample(style_system,  min(len(style_system), 1))
+            st = random.sample(style_tech,    min(len(style_tech),   chaos_pick(chaos_level,(1,2),(2,3),(3,4))))
+            sc = random.sample(style_color,   min(len(style_color),  1))
+            sx = random.sample(style_texture, min(len(style_texture),chaos_pick(chaos_level,(0,1),(1,1),(1,2))))
+            sp = random.sample(style_comp,    min(len(style_comp),   1))
+
+            sa = []
+            if chaos_level > 60 and style_accent:
+                sa = random.sample(style_accent, 1)
+
+            u  = random.sample(usages, min(len(usages), 1))
+
+            # ===== ③ 最终拼接（结构稳定）=====
+            new_batch.append(
+                f"{'，'.join(s)}，"
+                f"{'，'.join(ss)}，{'，'.join(st)}，{'，'.join(sc)}，"
+                f"{'，'.join(sx)}，{'，'.join(sp)}，"
+                f"{'，'.join(a)}，{'，'.join(m)}，"
+                + (f"{'，'.join(sa)}，" if sa else "")
+                + f"纹在{'，'.join(u)}"
+            )
+
+        st.session_state.generated_cache = new_batch
         st.rerun()
 
     # 🎲 方案筛选 (中间桌面)
