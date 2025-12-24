@@ -29,20 +29,31 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
     # 📍 映射核心必须放在最前面，确保全局可用
     temp_score = float(chaos_val) / 100.0 
     
-    # 如果没输入意图，直接随机拿两个词
-    if not user_intent or not user_intent.strip():
-        if inventory:
-            return "，".join(random.sample(inventory, min(len(inventory), 2)))
-        return "空"
+    # 💡 核心逻辑：意图是必选项，词库是变量池
+    if user_intent and user_intent.strip():
+        # 定义混沌状态的描述
+        if chaos_val < 40:
+            creativity_instruction = "请从词库中挑选风格最统一、最稳健的词进行搭配。"
+        elif chaos_val < 75:
+            creativity_instruction = "请从词库中挑选具有一定视觉张力的词进行搭配。"
+        else:
+            creativity_instruction = "请忽略常规逻辑，从词库中挑选最冷门、最具反差感、最怪异的词进行搭配。"
+            
     
     # 💡 这里的 Prompt 已经根据你的要求加强
-    prompt = f"意图：{user_intent}\n分类：{category}\n词库：{inventory}\n任务：1. 如果分类是 Subject 或 Action，请挑出 2-3 个相关的词。2. 其他分类选 1-2 个词。词与词之间用逗号隔开。只返回词汇。"
+    prompt = f"意图：{user_intent}\n 分类：{category}\n 词库：{inventory}\n 混沌等级：{chaos_val}/100（越高代表选词越冷门、越随机） 1. 结果必须包含“{user_intent}”。2. {creativity_instruction}.3. 选出 1-2 个搭档词。4. 只返回词汇，用逗号隔开。"
+        # 如果没输入意图，直接随机拿两个词
+    if not user_intent or not user_intent.strip():
+        if inventory:
+            return "，".join(random.sample(inventory, min(len(inventory), 6)))
+        return "空"
+
     
     try:
         res = client.chat.completions.create(
             model="deepseek-chat", 
             messages=[{"role": "user", "content": prompt}], 
-            temperature=temp_score # 🎯 审美光谱正式映射到核心
+            temperature=temp_score # 🎯 这里的物理参数控制了 AI 联想的散发程度
         )
         return res.choices[0].message.content.strip()
     except Exception as e:
