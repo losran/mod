@@ -121,12 +121,19 @@ def save_to_github(path, data_list):
         return True
     except: return False
 
+# ✅ 强制初始化 session_state（修复类型错误）
+if "selected_prompts" not in st.session_state or not isinstance(st.session_state.selected_prompts, list):
+    st.session_state.selected_prompts = []
 
+if "generated_cache" not in st.session_state or not isinstance(st.session_state.generated_cache, list):
+    st.session_state.generated_cache = []
 
-# 💡 初始化核心变量
-for key in ['selected_prompts', 'generated_cache', 'history_log', 'polished_text', 'manual_editor']:
-    if key not in st.session_state:
-        st.session_state[key] = "" if 'editor' in key or 'text' in key else []
+if "history_log" not in st.session_state or not isinstance(st.session_state.history_log, list):
+    st.session_state.history_log = []
+
+if "polished_text" not in st.session_state or not isinstance(st.session_state.polished_text, str):
+    st.session_state.polished_text = ""
+
         
 # 🔒 定义全局锁定状态
 is_working = len(st.session_state.polished_text) > 0
