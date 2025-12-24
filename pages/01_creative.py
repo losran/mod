@@ -191,10 +191,11 @@ with col_main:
         db_all = {k: get_github_data(v) for k, v in WAREHOUSE.items()}
         with st.spinner("AI 精准挑词中..."):
             new_batch = []
-            subjects = smart_sample_with_ai("Subject", "", db["Subject"], chaos_level)
-            actions  = smart_sample_with_ai("Action",  "", db["Action"],  chaos_level)
-            moods    = smart_sample_with_ai("Mood",    "", db["Mood"],    chaos_level)
-            usages   = smart_sample_with_ai("Usage",   "", db["Usage"],   chaos_level)
+            subjects = smart_sample_with_ai("Subject", "", db_all["Subject"], chaos_level)
+            actions = smart_sample_with_ai("Action", "", db_all["Action"], chaos_level)
+            moods   = smart_sample_with_ai("Mood", "", db_all["Mood"], chaos_level)
+            usages  = smart_sample_with_ai("Usage", "", db_all["Usage"], chaos_level)
+
 
             
             style_system  = smart_sample_with_ai("StyleSystem", intent_input, db_all["StyleSystem"], chaos_level)
