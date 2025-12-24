@@ -130,7 +130,7 @@ with col_main:
                 st_val = smart_sample_with_ai("Style", intent_input, db_all["Style"])
                 m = smart_sample_with_ai("Mood", intent_input, db_all["Mood"])
                 u = smart_sample_with_ai("Usage", intent_input, db_all["Usage"])
-                new_batch.append(f"{st_val}风格，{m}氛围，{m}氛围，{s}，{a}，{s}，{a}，{st_val}风格，{m}氛围，{m}氛围，{m}氛围，{m}氛围，纹在{u}")
+                new_batch.append(f"{s}，{a}，{st_val}风格，{m}氛围，纹在{u}")
             st.session_state.generated_cache = new_batch
         st.rerun()
 
