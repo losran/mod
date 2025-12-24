@@ -48,35 +48,39 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
 
     if not inventory:
         return []
+    pool_size = int(20 + (300 - 20) * chaos_val / 100)
 
         # 物理层洗牌，确保每次 AI 看到的词顺序都不同，打破雷同
-    shuffled_pool = random.sample(inventory, min(len(inventory), 40))
+    shuffled_pool = random.sample(
+        inventory,
+        min(len(inventory), pool_size)
+    )
            
     # 2. 情况 A：如果没有意图，直接返回随机组合
     if not user_intent or not user_intent.strip():
-        return random.sample(shuffled_pool, min(len(shuffled_pool), 2))
+        pick_n = chaos_pick(
+            chaos_val,
+            (1, 1),   # chaos < 30
+            (1, 2),   # chaos < 70
+            (2, 4)    # chaos >= 70
+        )
 
-    # 3. 情况 B：有意图，进入 AI 逻辑
-    # 根据审美光谱动态分配指令
-    if chaos_val < 20:
-        creativity_instruction = "请挑选最稳健、风格最统一的词"
-    elif chaos_val < 60:
-        creativity_instruction = "请挑选具有视觉张力的词"
-    else:
-        creativity_instruction = "请忽略常规逻辑，挑选最冷门、最怪异的反差词"
+        return random.sample(
+            shuffled_pool,
+            min(len(shuffled_pool), pick_n)
+        )
 
-    # 💡 必须在 if 块内定义 prompt，确保引用安全
+    # ---------- 3. 有意图：AI 只负责“选”，不理解 ----------
+    temp_score = chaos_val / 100.0
+
     prompt = f"""
-    意图锚点：{user_intent}
     分类：{category}
     词库：{shuffled_pool}
-    混沌等级：{chaos_val}/100
 
-    任务要求：
-    1. 结果必须强制包含“{user_intent}”。
-    2. {creativity_instruction}。
-    3. 额外选出 1-2 个搭档词。
-    4. 只返回词汇，用逗号隔开，禁止解释。
+    规则：
+    1. 只能从词库中选词，不得造词
+    2. 返回 1-3 个词
+    3. 只输出词，用逗号分隔
     """
     
     try:
@@ -90,6 +94,8 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
         # ✅ 关键修改：不再返回字符串，而是【词列表】
         raw = res.choices[0].message.content.strip()
         words = [w.strip() for w in raw.replace("，", ",").split(",") if w.strip()]
+         # 只保留在池子里的词
+        valid = [w for w in words if w in shuffled_pool]
         return words
         
     except Exception:
