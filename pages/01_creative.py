@@ -174,8 +174,15 @@ with col_gallery:
             st.session_state.history_log = []
             st.rerun()
 
+
 # --- 🔵 左侧：核心生成区 ---
-if execute_button:
+with col_main:
+    chaos_level = st.slider("混乱度", 0, 100, 55)
+    num = st.number_input("生成数量", 1, 10, 6)
+    intent_input = st.text_area("意图输入", placeholder="比如：青蛙，日式 old school")
+    execute_button = st.button("🔥 激发创意组合", type="primary", use_container_width=True)
+
+if st.button("🔥 激发创意组合", type="primary", use_container_width=True):
     st.session_state.polished_text = ""  # 解锁
     db_all = {k: get_github_data(v) for k, v in WAREHOUSE.items()}
 
@@ -196,14 +203,6 @@ if execute_button:
         style_accent  = smart_sample_with_ai("Accent",       intent_input, db_all["Accent"],       chaos_level)
 
         # ===== ② chaos → 取词数量映射 =====
-        def chaos_pick(c, low, mid, high):
-            if c < 30:
-                return random.randint(*low)
-            elif c < 70:
-                return random.randint(*mid)
-            else:
-                return random.randint(*high)
-
         for _ in range(num):
             s  = random.sample(subjects, min(len(subjects), 1))
             a  = random.sample(actions,  min(len(actions), chaos_pick(chaos_level, (1,1),(1,2),(2,3))))
