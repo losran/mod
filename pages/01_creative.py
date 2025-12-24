@@ -51,6 +51,19 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
             return "，".join(random.sample(inventory, min(len(inventory), 2)))
         return "空"
 
+def get_github_data(path):
+    url = f"https://api.github.com/repos/{REPO}/contents/{path}"
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    try:
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            # 解码 GitHub 的 Base64 内容
+            content = base64.b64decode(resp.json()['content']).decode()
+            return [line.strip() for line in content.splitlines() if line.strip()]
+    except Exception as e:
+        st.error(f"GitHub 读取失败: {e}")
+    return []
+
 def save_to_github(path, data_list):
     url = f"https://api.github.com/repos/{REPO}/contents/{path}"
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
