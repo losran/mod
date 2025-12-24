@@ -37,7 +37,8 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
     try:
         res = client.chat.completions.create(model="deepseek-chat", messages=[{"role": "user", "content": prompt}], temperature=temp_score)
         return res.choices[0].message.content.strip()
-    except: if inventory:
+    except Exception as e: 
+        if inventory:
             return "，".join(random.sample(inventory, min(len(inventory), 2)))
         return "空"
 
