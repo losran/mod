@@ -172,13 +172,20 @@ with col_main:
         db_all = {k: get_github_data(v) for k, v in WAREHOUSE.items()}
         with st.spinner("AI 精准挑词中..."):
             new_batch = []
+            subjects = smart_sample_with_ai("Subject", intent_input, db_all["Subject"], chaos_level)
+            actions  = smart_sample_with_ai("Action", intent_input, db_all["Action"], chaos_level)
+            styles   = smart_sample_with_ai("Style", intent_input, db_all["Style"], chaos_level)
+            moods    = smart_sample_with_ai("Mood", intent_input, db_all["Mood"], chaos_level)
+            usages   = smart_sample_with_ai("Usage", intent_input, db_all["Usage"], chaos_level)
+            
             for _ in range(num):
-                s = smart_sample_with_ai("Subject", intent_input, db_all["Subject"], chaos_level)
-                a = smart_sample_with_ai("Action", intent_input, db_all["Action"], chaos_level)
-                st_val = smart_sample_with_ai("Style", intent_input, db_all["Style"], chaos_level)
-                m = smart_sample_with_ai("Mood", intent_input, db_all["Mood"], chaos_level)
-                u = smart_sample_with_ai("Usage", intent_input, db_all["Usage"], chaos_level)
-                new_batch.append(f"{s}，{a}，{st_val}风格，{m}氛围，纹在{u}")
+                s = random.sample(subjects, min(1, len(subjects)))
+                a = random.sample(actions,  min(1, len(actions)))
+                st_val = random.sample(styles, min(1, len(styles)))
+                m = random.sample(moods, min(1, len(moods)))
+                u = random.sample(usages, min(1, len(usages)))
+
+                new_batch.append(f"{'，'.join(s)}，{'，'.join(a)}，{'，'.join(st_val)}风格，{'，'.join(m)}氛围，纹在{'，'.join(u)}")
             st.session_state.generated_cache = new_batch
         st.rerun()
 
