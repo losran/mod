@@ -28,12 +28,12 @@ GALLERY_FILE = "gallery/inspirations.txt"
 def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
     # 1. 映射计算与物理洗牌
     temp_score = float(chaos_val) / 100.0 
-    
-    if inventory:
+
+    if not inventory:
+        return []
+
         # 物理层洗牌，确保每次 AI 看到的词顺序都不同，打破雷同
-        shuffled_pool = random.sample(inventory, min(len(inventory), 40))
-    else:
-        return "空"
+    shuffled_pool = random.sample(inventory, min(len(inventory), 40))
            
     # 2. 情况 A：如果没有意图，直接返回随机组合
     if not user_intent or not user_intent.strip():
@@ -69,10 +69,15 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
             temperature=temp_score,
             frequency_penalty=1.2  # 增加惩罚，进一步防止雷同
         )
-        return res.choices[0].message.content.strip()
-    except Exception as e:
-        # 兜底：即使 AI 挂了，也要保证包含意图词
-        return f"{user_intent}，{random.choice(shuffled_pool)}"
+        
+        # ✅ 关键修改：不再返回字符串，而是【词列表】
+        raw = res.choices[0].message.content.strip()
+        words = [w.strip() for w in raw.replace("，", ",").split(",") if w.strip()]
+        return words
+        
+    except Exception:
+        # 兜底也返回【词列表】
+        return [user_intent, random.choice(shuffled_pool)]
         
 
 def get_github_data(path):
