@@ -46,8 +46,8 @@ col_opt1, col_opt2 = st.columns([2, 1])
 with col_opt1:
     target_platform = st.selectbox(
         "选择目标 AI 平台", 
-        ["万能自适应 (推荐)", "ChatGPT", "Doubao (豆包/镜像站)"],
-        help="不同平台输入框构造不同，手动选择更精准"
+        ["万能自适应 (推荐)", "Gemini (最新版适配)", "ChatGPT", "Doubao (豆包/镜像站)"],
+        help="Gemini 采用的是 DIV 编辑器逻辑，万能模式如果不动，请选此项"
     )
 
 # 5. 输入区域
@@ -88,12 +88,12 @@ with col_btn:
         if task_list:
             encoded_data = urllib.parse.quote(json.dumps(task_list))
 
-            # JS 核心代码 (v15.0 内核)
+            # JS 核心代码 (v16.0 Gemini 适配版)
             js_code = f"""(async function() {{
                 window.kill = false;
                 const tasks = JSON.parse(decodeURIComponent("{encoded_data}"));
 
-                // 1. UI 状态条
+                // 1. UI 状态条 (逻辑保留)
                 function showStatus(text, color = "#1e293b", textColor = "#fff") {{
                     let el = document.getElementById('magic-status-bar');
                     if (!el) {{
@@ -107,26 +107,34 @@ with col_btn:
                     el.style.color = textColor;
                 }}
 
-                // 2. 输入框探测
+                // 2. 📍 定位：输入框探测 (新增 Gemini 适配)
                 function getInputBox() {{
+                    // 优先识别 Gemini 的 contenteditable div
+                    let geminiBox = document.querySelector('div[role="textbox"][contenteditable="true"]');
+                    if (geminiBox) return geminiBox;
+                    
                     return document.querySelector(
-                        '#prompt-textarea, div[contenteditable="true"], textarea, .n-input__textarea-el, [placeholder*="输入"], [placeholder*="提问"]'
+                        '#prompt-textarea, [data-testid="rich-textarea"], textarea, .n-input__textarea-el, [placeholder*="输入"], [placeholder*="提问"], [placeholder*="Message"]'
                     );
                 }}
 
-                // 3. 发送按钮探测
+                // 3. 📍 定位：发送按钮探测 (新增 Gemini 识别)
                 function getSendBtn() {{
+                    // 锁定 Gemini 专属 aria-label
+                    let geminiBtn = document.querySelector('button[aria-label*="发送"], button[aria-label*="Send"]');
+                    if (geminiBtn && !geminiBtn.disabled) return geminiBtn;
+
                     let btns = Array.from(document.querySelectorAll('button, [role="button"], i'));
                     return btns.find(b => {{
-                        const t = (b.innerText || b.ariaLabel || b.className || "").toLowerCase();
-                        const isSend = t.includes('发') || t.includes('send') || (b.tagName === 'I' && t.includes('send')) || b.getAttribute('data-testid') === 'send-button';
+                        const t = (b.innerText || b.ariaLabel || b.className || b.outerHTML || "").toLowerCase();
+                        const isSend = t.includes('发') || t.includes('send') || t.includes('m12 2 2 21 5 12 10 12') || b.getAttribute('data-testid') === 'send-button';
                         const isNew = t.includes('新') || t.includes('new');
                         const isStop = t.includes('stop') || t.includes('停止');
                         return isSend && !isNew && !isStop && b.offsetParent !== null && !b.disabled;
                     }});
                 }}
 
-                // 4. 生成状态探测
+                // 4. 生成状态探测 (适配 Gemini)
                 function isGenerating() {{
                     let btns = Array.from(document.querySelectorAll('button, [role="button"]'));
                     return btns.some(b => {{
@@ -135,8 +143,7 @@ with col_btn:
                     }});
                 }}
 
-                console.log("%c🤖 v15.0 启动", "color:#6366f1; font-weight:bold;");
-                showStatus("🚀 脚本就绪...", "#6366f1");
+                showStatus("🚀 Gemini 适配脚本就绪...", "#6366f1");
 
                 for (let i = 0; i < tasks.length; i++) {{
                     if (window.kill) {{ showStatus("🛑 已停止", "#ef4444"); break; }}
@@ -146,11 +153,20 @@ with col_btn:
                     if (!box) {{ showStatus("❌ 找不到输入框", "#ef4444"); break; }}
                     
                     box.focus();
-                    document.execCommand('insertText', false, tasks[i]);
+                    
+                    // 💡 针对 Gemini 的 DIV 容器特殊处理
+                    if (box.tagName === 'DIV') {{
+                        box.innerText = tasks[i]; 
+                    }} else {{
+                        document.execCommand('insertText', false, tasks[i]);
+                    }}
+
                     await new Promise(r => setTimeout(r, 1000));
+                    // 触发事件让发送按钮变色
                     box.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    box.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                    
                     await new Promise(r => setTimeout(r, 500));
-                    box.dispatchEvent(new KeyboardEvent('keydown', {{bubbles:true, cancelable:true, key:'Enter', code:'Enter', keyCode:13}}));
 
                     let sendBtn = getSendBtn();
                     if (sendBtn) sendBtn.click();
@@ -161,7 +177,6 @@ with col_btn:
                         while(true) {{
                             if (window.kill) break;
                             if (!isGenerating()) break;
-                            
                             showStatus("🎨 作画中 (" + waitTime + "s)...", "#8b5cf6");
                             await new Promise(r => setTimeout(r, 1000));
                             waitTime++;
@@ -174,10 +189,7 @@ with col_btn:
                         }}
                     }}
                 }}
-                if(!window.kill) {{
-                    showStatus("🎉 全部完成！", "#10b981");
-                    setTimeout(() => document.getElementById('magic-status-bar').remove(), 5000);
-                }}
+                if(!window.kill) showStatus("🎉 全部完成！", "#10b981");
             }})();"""
 
             # --- C. 自动复制 ---
