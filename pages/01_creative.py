@@ -251,8 +251,6 @@ with col_main:
                 st.session_state.generated_cache = []; st.session_state.selected_prompts = []
                 st.rerun()
 
-    st.session_state.generated_cache = []
-
             # 2. 执行润色
             with st.spinner("AI 注入灵魂中..."):
                 try:
