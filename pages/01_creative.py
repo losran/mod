@@ -178,7 +178,7 @@ with col_gallery:
 # --- 🔵 左侧：核心生成区 ---
 with col_main:
     
-    num = st.number_input("生成数量", 1, 10, 6)
+    
     col_cfg1, col_cfg2 = st.columns(2)
     with col_cfg1: num = st.slider("生成方案数量", 1, 10, 6)
     with col_cfg2: chaos_level = st.slider("混乱程度", 0, 100, 55)
