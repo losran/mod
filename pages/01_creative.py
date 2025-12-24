@@ -177,7 +177,7 @@ with col_gallery:
 
 # --- 🔵 左侧：核心生成区 ---
 with col_main:
-    chaos_level = st.slider("混乱度", 0, 100, 55)
+    
     num = st.number_input("生成数量", 1, 10, 6)
     col_cfg1, col_cfg2 = st.columns(2)
     with col_cfg1: num = st.slider("生成方案数量", 1, 10, 6)
@@ -207,7 +207,6 @@ with col_main:
             for _ in range(num):
                 s = random.sample(subjects, min(1, len(subjects)))
                 a = random.sample(actions,  min(1, len(actions)))
-                st_val = random.sample(styles, min(1, len(styles)))
                 m = random.sample(moods, min(1, len(moods)))
                 u = random.sample(usages, min(1, len(usages)))
 
