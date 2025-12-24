@@ -60,9 +60,9 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
     if not user_intent or not user_intent.strip():
         pick_n = chaos_pick(
             chaos_val,
-            (10, 18),   # chaos < 30
-            (10, 20),   # chaos < 70
-            (12, 24)    # chaos >= 70
+            (30, 50),   # chaos < 30
+            (30, 50),   # chaos < 70
+            (30, 50)    # chaos >= 70
         )
 
         return random.sample(
@@ -88,7 +88,7 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
             model="deepseek-chat", 
             messages=[{"role": "user", "content": prompt}], 
             temperature=temp_score,
-            frequency_penalty=1.2  # 增加惩罚，进一步防止雷同
+            frequency_penalty=1.5  # 增加惩罚，进一步防止雷同
         )
         
         # ✅ 关键修改：不再返回字符串，而是【词列表】
@@ -186,8 +186,8 @@ with col_main:
     
     
     col_cfg1, col_cfg2 = st.columns(2)
-    with col_cfg1: num = st.slider("生成方案数量", 1, 10, 6)
-    with col_cfg2: chaos_level = st.slider("混乱程度", 0, 100, 55)
+    with col_cfg1: num = st.slider("生成方案数量", 1, 6, 6)
+    with col_cfg2: chaos_level = st.slider("混乱程度", 0, 100,100)
     
     intent_input = st.text_area("✍ 组合意图输入框", value=st.session_state.manual_editor, disabled=is_working)
     st.session_state.manual_editor = intent_input
