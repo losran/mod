@@ -8,6 +8,10 @@ import base64
 from openai import OpenAI
 from style_manager import apply_pro_style
 
+if st.button("🔥 硬清 Streamlit 状态（只点一次）"):
+    st.session_state.clear()
+    st.rerun()
+
 # 📍 视觉样式同步
 apply_pro_style()
 
