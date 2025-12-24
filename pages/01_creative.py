@@ -193,9 +193,16 @@ with col_main:
             new_batch = []
             subjects = smart_sample_with_ai("Subject", intent_input, db_all["Subject"], chaos_level)
             actions  = smart_sample_with_ai("Action", intent_input, db_all["Action"], chaos_level)
-            styles   = smart_sample_with_ai("Style", intent_input, db_all["Style"], chaos_level)
             moods    = smart_sample_with_ai("Mood", intent_input, db_all["Mood"], chaos_level)
             usages   = smart_sample_with_ai("Usage", intent_input, db_all["Usage"], chaos_level)
+            
+            style_system  = smart_sample_with_ai("StyleSystem", intent_input, db_all["StyleSystem"], chaos_level)
+            style_tech    = smart_sample_with_ai("Technique", intent_input, db_all["Technique"], chaos_level)
+            style_color   = smart_sample_with_ai("Color", intent_input, db_all["Color"], chaos_level)
+            style_texture = smart_sample_with_ai("Texture", intent_input, db_all["Texture"], chaos_level)
+            style_comp    = smart_sample_with_ai("Composition", intent_input, db_all["Composition"], chaos_level)
+            style_accent  = smart_sample_with_ai("Accent", intent_input, db_all["Accent"], chaos_level)
+
             
             for _ in range(num):
                 s = random.sample(subjects, min(1, len(subjects)))
@@ -204,7 +211,19 @@ with col_main:
                 m = random.sample(moods, min(1, len(moods)))
                 u = random.sample(usages, min(1, len(usages)))
 
-                new_batch.append(f"{'，'.join(s)}，{'，'.join(a)}，{'，'.join(st_val)}风格，{'，'.join(m)}氛围，纹在{'，'.join(u)}")
+                new_batch.append(
+                    f"{random.choice(subjects)}，"
+                    f"{random.choice(style_system)}，"
+                    f"{random.choice(style_tech)}，"
+                    f"{random.choice(style_color)}，"
+                    f"{random.choice(style_texture)}，"
+                    f"{random.choice(style_comp)}，"
+                    f"{random.choice(actions)}，"
+                    f"{random.choice(moods)}，"
+                    + (f"{random.choice(style_accent)}，" if chaos_level > 60 and style_accent else "")
+                    + f"纹在{random.choice(usages)}"
+                )
+
             st.session_state.generated_cache = new_batch
         st.rerun()
     # 🎲 方案筛选 (中间桌面)
