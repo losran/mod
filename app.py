@@ -49,8 +49,6 @@ def sync_data(filename, data_list):
     except: st.error("同步失败")
 
 # --- 4. 状态初始化 ---
-if 'db' not in st.session_state:
-    st.session_state.db = {k: get_data(v) for k, v in FILES.items()}
 if 'input_val' not in st.session_state: st.session_state.input_val = ""
 if 'ai_results' not in st.session_state: st.session_state.ai_results = [] # 存储AI拆解结果
 if 'is_open' not in st.session_state: st.session_state.is_open = True
@@ -181,7 +179,9 @@ if st.session_state.is_open:
         cat_view = st.selectbox("类型", list(FILES.keys()), label_visibility="collapsed")
         
         # 获取当前分类的真实数据
-        current_words = st.session_state.db.get(cat_view, [])
+        #current_words = st.session_state.db.get(cat_view, [])
+        current_words = get_data(FILES[cat_view])
+
         
         st.write("")
         # 📍 这里的 UI 是你最喜欢的：文字和叉号合并在一个视觉框内
