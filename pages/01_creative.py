@@ -30,8 +30,8 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
     if not user_intent or not user_intent.strip():
         return random.choice(inventory) if inventory else "空"
         # 📍 映射核心：0-100 映射为 0.0-1.0
-    # 55分对应 0.55，属于稳健中带点惊喜
-    temp_score = float(chaos_val) / 100.0
+        # 55分对应 0.55，属于稳健中带点惊喜
+        temp_score = float(chaos_val) / 100.0
     
     prompt = f"意图：{user_intent}\n分类：{category}\n词库：{inventory}\n任务：1. 如果分类是 Subject 或 Action，请挑出 2-3 个最相关的词，用逗号隔开。2. 其他分类选2~3个最精准的词。只返回词汇。"
     try:
