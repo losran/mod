@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.set_page_config(layout="wide")
-st.title("Creative Engine")
+st.set_page_config(layout="wide", page_title="Creative Engine")
 
-st.write("入口已恢复")
+st.title("Creative Engine")
+st.caption("入口已隐藏，请从左侧直接进入功能模块")
