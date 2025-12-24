@@ -205,7 +205,8 @@ with col_main:
             style_comp    = smart_sample_with_ai("Composition", intent_input, db_all["Composition"], chaos_level)
             style_accent  = smart_sample_with_ai("Accent", intent_input, db_all["Accent"], chaos_level)
 
-            
+            intent = intent_input.strip()
+
             for _ in range(num):
                 s = random.sample(subjects, min(1, len(subjects)))
                 a = random.sample(actions,  min(1, len(actions)))
