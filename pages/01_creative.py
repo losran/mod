@@ -9,6 +9,7 @@ from openai import OpenAI
 from style_manager import apply_pro_style
 
 # 📍 视觉样式同步
+st.set_page_config(layout="wide", page_title="Creative Engine")
 apply_pro_style()
 
 # --- 1. 核心配置 ---
@@ -53,7 +54,7 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
            
     # 2. 情况 A：如果没有意图，直接返回随机组合
     if not user_intent or not user_intent.strip():
-        return "，".join(random.sample(shuffled_pool, min(len(shuffled_pool), 2)))
+        return random.sample(shuffled_pool, min(len(shuffled_pool), 2))
             
     # 3. 情况 B：有意图，进入 AI 逻辑
     # 根据审美光谱动态分配指令
@@ -120,8 +121,7 @@ def save_to_github(path, data_list):
         return True
     except: return False
 
-# --- 3. UI 布局与 Session 初始化 ---
-st.set_page_config(layout="wide", page_title="Creative Engine")
+
 
 # 💡 初始化核心变量
 for key in ['selected_prompts', 'generated_cache', 'history_log', 'polished_text', 'manual_editor']:
