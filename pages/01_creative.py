@@ -60,9 +60,9 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
     if not user_intent or not user_intent.strip():
         pick_n = chaos_pick(
             chaos_val,
-            (1, 1),   # chaos < 30
-            (1, 2),   # chaos < 70
-            (2, 4)    # chaos >= 70
+            (10, 18),   # chaos < 30
+            (10, 20),   # chaos < 70
+            (12, 24)    # chaos >= 70
         )
 
         return random.sample(
