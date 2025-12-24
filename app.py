@@ -57,8 +57,10 @@ if 'is_open' not in st.session_state: st.session_state.is_open = True
 apply_pro_style()
 
 # 侧边栏：使用真实数据驱动统计
-real_counts = {k: len(v) for k, v in st.session_state.db.items()}
-render_unified_sidebar(real_counts)
+real_counts = {
+    k: len(get_data(v))
+    for k, v in FILES.items()
+}
 
 # --- 6. 顶层开关 (镜像布局核心) ---
 btn_col1, btn_col2 = st.columns([12, 1])
