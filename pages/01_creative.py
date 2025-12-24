@@ -54,8 +54,8 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
            
     # 2. 情况 A：如果没有意图，直接返回随机组合
     if not user_intent or not user_intent.strip():
-        return "，".join(random.sample(shuffled_pool, min(len(shuffled_pool), 2)))
-            
+        return random.sample(shuffled_pool, min(len(shuffled_pool), 2))
+
     # 3. 情况 B：有意图，进入 AI 逻辑
     # 根据审美光谱动态分配指令
     if chaos_val < 20:
