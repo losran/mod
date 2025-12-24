@@ -50,7 +50,6 @@ def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
         return []
     pool_size = int(20 + (300 - 20) * chaos_val / 100)
 
-        # 物理层洗牌，确保每次 AI 看到的词顺序都不同，打破雷同
     shuffled_pool = random.sample(
         inventory,
         min(len(inventory), pool_size)
