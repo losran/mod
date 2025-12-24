@@ -26,45 +26,54 @@ WAREHOUSE = {
 GALLERY_FILE = "gallery/inspirations.txt"
 
 def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
-    # 📍 映射核心必须放在最前面，确保全局可用
+    # 1. 映射计算与物理洗牌
     temp_score = float(chaos_val) / 100.0 
-            
+    
     if inventory:
-            shuffled_pool = random.sample(inventory, min(len(inventory), 40))
-       else:
-            return "空"
+        # 物理层洗牌，确保每次 AI 看到的词顺序都不同，打破雷同
+        shuffled_pool = random.sample(inventory, min(len(inventory), 40))
+    else:
+        return "空"
            
+    # 2. 情况 A：如果没有意图，直接返回随机组合
     if not user_intent or not user_intent.strip():
-            return "，".join(random.sample(shuffled_pool, min(len(shuffled_pool), 2)))
+        return "，".join(random.sample(shuffled_pool, min(len(shuffled_pool), 2)))
             
-    # 💡 核心逻辑：意图是必选项，词库是变量池
-    if user_intent and user_intent.strip():
-        # 定义混沌状态的描述
-        if chaos_val < 20:
-            creativity_instruction = "请从词库中挑选风格最统一、最稳健的词进行搭配。"
-        elif chaos_val < 60:
-            creativity_instruction = "请从词库中挑选具有一定视觉张力的词进行搭配。"
-        else:
-            creativity_instruction = "请忽略常规逻辑，从词库中挑选最冷门、最具反差感、最怪异的词进行搭配。"
+    # 3. 情况 B：有意图，进入 AI 逻辑
+    # 根据审美光谱动态分配指令
+    if chaos_val < 20:
+        creativity_instruction = "请挑选最稳健、风格最统一的词"
+    elif chaos_val < 60:
+        creativity_instruction = "请挑选具有视觉张力的词"
+    else:
+        creativity_instruction = "请忽略常规逻辑，挑选最冷门、最怪异的反差词"
 
-    # 💡 这里的 Prompt 已经根据你的要求加强
-    prompt = f"""意图：{user_intent}\n分类：{category}\n词库：{inventory}\n混沌等级：{chaos_val}/100（越高代表选词越冷门、越随机）1. 结果必须包含“{user_intent}”。2. {creativity_instruction}.3. 选出 1-2 个搭档词。4. 只返回词汇，用逗号隔开。"""
-        # 如果没输入意图，直接随机拿两个词
+    # 💡 必须在 if 块内定义 prompt，确保引用安全
+    prompt = f"""
+    意图锚点：{user_intent}
+    分类：{category}
+    词库：{shuffled_pool}
+    混沌等级：{chaos_val}/100
 
-        
+    任务要求：
+    1. 结果必须强制包含“{user_intent}”。
+    2. {creativity_instruction}。
+    3. 额外选出 1-2 个搭档词。
+    4. 只返回词汇，用逗号隔开，禁止解释。
+    """
+    
     try:
         res = client.chat.completions.create(
             model="deepseek-chat", 
             messages=[{"role": "user", "content": prompt}], 
-            temperature=temp_score # 🎯 这里的物理参数控制了 AI 联想的散发程度
-            frequency_penalty=1.5
+            temperature=temp_score,
+            frequency_penalty=1.2  # 增加惩罚，进一步防止雷同
         )
         return res.choices[0].message.content.strip()
     except Exception as e:
-        # 兜底逻辑：如果 AI 罢工，随机抓两个凑数
-        if inventory:
-            return "，".join(random.sample(inventory, min(len(inventory), 2)))
-        return "空"
+        # 兜底：即使 AI 挂了，也要保证包含意图词
+        return f"{user_intent}，{random.choice(shuffled_pool)}"
+        
 
 def get_github_data(path):
     url = f"https://api.github.com/repos/{REPO}/contents/{path}"
