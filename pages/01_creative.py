@@ -39,7 +39,7 @@ if "final_solutions" not in st.session_state:
     st.session_state.final_solutions = []
 
 # ==========================================
-# 2. 核心引擎 (100% 还原原版精密组装)
+# 2. 核心引擎 (100% 还原原版精密组装逻辑)
 # ==========================================
 
 def smart_pick_ingredient(category):
@@ -51,7 +51,7 @@ def smart_pick_ingredient(category):
 
 def assemble_core_logic(user_intent):
     """
-    【核心逻辑堡垒】
+    【核心逻辑堡垒 - 绝不阉割】
     Sequence: Intent -> Subject -> Style -> Tech -> Color -> Texture -> Comp -> Action -> Mood -> (Accent) -> Usage
     """
     # 1. 备料
@@ -167,35 +167,38 @@ with col_btn:
             st.rerun()
 
 # ==========================================
-# 4. 结果交付区 (一键投递到 Automation)
+# 4. 结果交付区 (修改验证点：看这里的标题变了没)
 # ==========================================
 if st.session_state.final_solutions:
     st.markdown("---")
-    st.subheader("💎 Polished Concepts")
     
-    # 显示所有方案
+    # ⚠️ 我改了这个标题，如果你看到 "Polished Concepts" 说明没更新成功
+    # 如果看到 "📦 Ready for Automation" 说明代码生效了
+    st.subheader("📦 Ready for Automation") 
+    
+    # 容器化展示（只展示文本，不展示单个按钮！）
+    content_text_block = ""
     for sol in st.session_state.final_solutions:
         with st.container(border=True):
             st.markdown(sol) # 包含 "**方案N：**"
+            content_text_block += sol + "\n\n"
 
     st.markdown("---")
     c_send, c_clear = st.columns([3, 1])
     
-    # --- 核心修改：批量投递按钮 ---
+    # --- 核心修改：真正的批量投递按钮 ---
     with c_send:
-        if st.button("🚀 Send ALL to Automation", type="primary", use_container_width=True):
-            # 1. 将列表合并成一个长字符串，用换行符分隔
-            # 02_automation.py 会通过正则 "**方案N：" 自动识别分割
-            combined_text = "\n\n".join(st.session_state.final_solutions)
+        # 使用 type="primary" 红色/亮色按钮
+        if st.button(f"🚀 Send ALL {qty} Options to Automation Pipeline", type="primary", use_container_width=True):
             
-            # 2. 存入 session_state (适配 02 页面的读取逻辑)
-            st.session_state.polished_text = combined_text
-            st.session_state.auto_input_cache = combined_text # 双重保险
+            # 1. 存入 Cache (这会传递给 02 页面的 default_text)
+            st.session_state.polished_text = content_text_block
+            st.session_state.auto_input_cache = content_text_block 
             
-            # 3. 跳转页面
+            # 2. 强制跳转
             st.switch_page("pages/02_automation.py")
             
     with c_clear:
-        if st.button("Clear All", use_container_width=True):
+        if st.button("🗑️ Clear All", use_container_width=True):
             st.session_state.final_solutions = []
             st.rerun()
