@@ -14,10 +14,19 @@ REPO = "losran/tattoo-ai-tool"
 FILES = {
     "Subject": "subjects.txt",
     "Action": "actions.txt",
-    "Style": "styles.txt",
+
+    # ✅ 新 Style 拆分
+    "StyleSystem": "styles_system.txt",
+    "Technique": "styles_technique.txt",
+    "Color": "styles_color.txt",
+    "Texture": "styles_texture.txt",
+    "Composition": "styles_composition.txt",
+    "Accent": "styles_accent.txt",
+
     "Mood": "moods.txt",
     "Usage": "usage.txt"
 }
+
 
 # --- 3. GitHub IO ---
 def get_data(filename):
