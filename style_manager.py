@@ -32,26 +32,19 @@ def apply_pro_style():
             border-bottom: 1px solid #1a1a1a !important; 
         }}
 
-        /* 4. 彻底杀掉乱码文字 (精准定点爆破) */
-        /* 强制隐藏按钮里所有原本的文字、图标，防止 keyboard_... 显现 */
-        [data-testid="stHeader"] button[data-testid*="Sidebar"] * {{
-            display: none !important;
-            font-size: 0 !important;
-            color: transparent !important;
-            text-indent: -9999px !important;
-        }}
-
-        /* 5. 画“三条杠”：不用代码词，绝对不产生乱码 */
+        /* 1. 彻底抹除那个该死的文字，不给它任何露脸机会 */
         [data-testid="stHeader"] button[data-testid*="Sidebar"] {{
+            color: transparent !important;
+            font-size: 0 !important;
+            line-height: 0 !important;
+            overflow: hidden !important;
             border: 1px solid #333 !important;
             background-color: #111 !important;
-            width: 36px !important;
-            height: 36px !important;
-            position: relative !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
+            width: 34px !important;
+            height: 34px !important;
         }}
+
+        /* 2. 画出干净的三条杠 */
         [data-testid="stHeader"] button[data-testid*="Sidebar"]::after {{
             content: "" !important;
             display: block !important;
@@ -62,15 +55,16 @@ def apply_pro_style():
             width: 18px !important;
             height: 2px !important;
             background-color: #888 !important;
-            /* 使用阴影画出上下两杠 */
             box-shadow: 0 -6px 0 #888, 0 6px 0 #888 !important;
-            transition: all 0.2s ease !important;
-        }}
-        [data-testid="stHeader"] button:hover::after {{
-            background-color: #fff !important;
-            box-shadow: 0 -6px 0 #fff, 0 6px 0 #fff !important;
+            z-index: 10 !important;
         }}
 
+        /* 3. 禁止任何子元素显示（彻底杀掉里面的 span 或图标标签） */
+        [data-testid="stHeader"] button[data-testid*="Sidebar"] * {{
+            display: none !important;
+            visibility: hidden !important;
+        }}
+        
         /* 6. 核心对齐锁死：42px 绝对对齐 */
         /* 强制底边对齐容器 */
         [data-testid="column"] {{
