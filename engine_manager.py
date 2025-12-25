@@ -69,6 +69,8 @@ def init_data():
 # ===========================
 # 3. Sidebar Render (English Version)
 # ===========================
+# 找到 def render_sidebar(): ... 这一整块，替换成下面这样：
+
 def render_sidebar():
     # 引入样式
     try:
@@ -76,8 +78,8 @@ def render_sidebar():
         apply_pro_style()
     except ImportError:
         pass
-        
-    # 隐藏系统自带导航
+
+    # 隐藏 Streamlit 自带的导航
     st.markdown("""
         <style>
             [data-testid="stSidebarNav"] { display: none !important; }
@@ -86,30 +88,32 @@ def render_sidebar():
 
     init_data()
     
-    # 🔥 关键修正：所有内容都要写在 'with st.sidebar:' 里面！
     with st.sidebar:
-        # 1. Logo 区域
+        # 1. 顶部 Logo 区域
         if os.path.exists("images/logo.png"):
             st.image("images/logo.png", width=140)
         else:
             st.markdown("### ⚡ MOD ENGINE")
-            
-        st.markdown("---")
 
-        # 2. 导航菜单 (现在它们会在侧边栏里了)
+        st.markdown("---")
+        
+        # 2. 🔥 核心菜单区域 (位置就在 Logo 下面)
+        st.markdown("#### 🧭 Navigation") # 加个小标题更好看
         st.page_link("app.py", label="Smart Ingest")
         st.page_link("pages/01_creative.py", label="Creative Engine")
         st.page_link("pages/02_automation.py", label="Automation")
-        
-        st.markdown("---")
-    
-        # 3. 控制台和库存
-        st.header("Engine Console")
-        st.markdown("### Live Inventory")
 
+        st.markdown("---")
+
+        # 3. 下半部分：控制台和库存
+        st.header("Engine Console")
+        st.caption("Live Inventory Stats") # 加个副标题
+        
         if "db_all" in st.session_state:
-            for k, v in st.session_state.db_all.items():
-                st.markdown(f"**{k}** : `{len(v)}`")
+            # 使用 expander 收纳库存，避免太长占位置
+            with st.expander("📦 Inventory Details", expanded=True):
+                for k, v in st.session_state.db_all.items():
+                    st.markdown(f"**{k}** : `{len(v)}`")
         else:
             st.warning("Syncing...")
         
