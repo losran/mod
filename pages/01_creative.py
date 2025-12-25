@@ -142,38 +142,37 @@ user_input = st.text_area(
     placeholder="在此输入核心创意...\n 留空则进入【盲盒模式】，系统将自动抽取核心主体并完成全套组装！"
 )
 
-# 1. 在 st.columns 里加上 vertical_alignment="bottom"
-# 这会让这一行里的所有东西，不管高的矮的，全部“底边对齐”！
+# --- 核心布局：对齐数量输入框与生成按钮 ---
+# 使用 vertical_alignment="bottom" 强制让这一行所有组件底边对齐
 col_num, col_btn, col_blank = st.columns([1, 2, 3], vertical_alignment="bottom")
 
 with col_num:
-    # 2. 加上 label_visibility="collapsed"
-    # 这会彻底删掉数字框头顶的文字占位，而不是仅仅隐藏它
-    qty = st.number_input("Batch Size", min_value=1, max_value=8, value=4, label_visibility="collapsed")
+    # 使用 label_visibility="collapsed" 彻底移除上方标题占位
+    qty = st.number_input(
+        "Batch Size", 
+        min_value=1, 
+        max_value=8, 
+        value=4, 
+        label_visibility="collapsed"
+    )
 
 with col_btn:
-    # 按钮保持不变
+    # 按钮文案逻辑
     is_blind_mode = not user_input.strip()
     btn_text = "✨ Generate (Blind Box)" if is_blind_mode else "✨ Generate Concepts"
     
+    # 执行生成逻辑
     if st.button(btn_text, type="primary", use_container_width=True):
-        # ... (后续逻辑不变)
-    
-    is_blind_mode = not user_input.strip()
-    btn_text = "✨ Generate (Blind Box)" if is_blind_mode else "✨ Generate Concepts"
-    
-    if st.button(btn_text, type="primary", use_container_width=True):
-        
-        # 确定起始意图
+        # 确定意图
         final_intent = user_input.strip()
         if is_blind_mode:
             final_intent = smart_pick_ingredient("Subject") or "神秘图腾"
-            st.toast(f" 盲盒已开启！核心主体：{final_intent}", icon="🎁")
+            st.toast(f"🎲 盲盒已开启！核心主体：{final_intent}", icon="🎁")
         
-        with st.spinner(f"正在组装 {qty} 组方案 (Core Logic Running)..."):
+        # 运行流水线
+        with st.spinner(f"正在组装 {qty} 组方案..."):
             st.session_state.final_solutions = run_creative_pipeline(final_intent, qty)
             st.rerun()
-
 # ==========================================
 # 4. 结果交付区 (修改验证点：看这里的标题变了没)
 # ==========================================
