@@ -2,7 +2,7 @@
 import streamlit as st
 
 def apply_pro_style():
-    # 保持 Google Fonts 引入，字体还是要好看
+    # 引入 Google Fonts
     font_url = "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
 
     st.markdown(f"""
@@ -10,139 +10,95 @@ def apply_pro_style():
         @import url('{font_url}');
 
         /* =========================
-           1. 核心配色：黑白灰 (Monochrome)
+           1. ☢️ 核弹级去红 (覆盖系统变量)
         ========================= */
         :root {{
-            --primary-color: #9e9e9e; /* 覆盖默认红色为中性灰 */
-            --background-color: #0f1014;
-            --secondary-background-color: #16171d;
-            --text-color: #e0e0e0;
+            --primary-color: #888888 !important; /* 把系统默认的红色变量强制改成灰色 */
+        }}
+        
+        /* 强制覆盖所有使用了系统红色的组件 */
+        *[style*="background-color: rgb(255, 75, 75)"], 
+        *[style*="background-color: #ff4b4b"],
+        *[style*="background-color: #FF4B4B"] {{
+            background-color: #666666 !important;
         }}
 
-        /* ⚪ 滑块 (Slider) - 银灰色质感 */
-        div[data-baseweb="slider"] div[class*="css"] {{
-            background-color: #666666 !important; /* 轨道颜色 */
+        /* =========================
+           2. 滑块 (Slider) 深度定制
+        ========================= */
+        /* 滑轨底色 */
+        div[data-baseweb="slider"] div {{
+            background-color: #333333 !important;
         }}
-        div[data-testid="stThumbValue"] {{
-            background-color: #444444 !important; /* 数值框背景 */
-            color: #ffffff !important;
-        }}
+        
+        /* 滑块头 (那个圆点) */
         div[role="slider"] {{
-            background-color: #e0e0e0 !important; /* 滑块头：亮银色 */
-            border: 2px solid #ffffff !important;  /* 加个白边，更清晰 */
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            background-color: #e0e0e0 !important;
+            border: 2px solid #000000 !important;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }}
+        
+        /* 滑块数值显示框 */
+        div[data-testid="stThumbValue"] {{
+            background-color: #222222 !important;
+            color: #cccccc !important;
+            border: 1px solid #444444 !important;
         }}
 
-        /* 🔘 单选框/复选框 (Radio/Checkbox) */
+        /* =========================
+           3. 其他组件黑灰化
+        ========================= */
+        /* 单选框/复选框选中状态 */
         div[data-baseweb="radio"] div[class*="css"], 
         div[data-baseweb="checkbox"] div[class*="css"] {{
-            background-color: #888888 !important; /* 选中时的灰色 */
-            border-color: #888888 !important;
+            background-color: #666666 !important;
+            border-color: #666666 !important;
         }}
-        /* 未选中的框框 */
-        div[data-baseweb="checkbox"] div[class*="css"] {{
-            border-color: #444444 !important; 
+
+        /* 按钮 */
+        .stButton > button {{
+            border-radius: 4px !important;
+            font-weight: 500 !important;
+            border: 1px solid #444 !important;
         }}
-        /* 选中时的文字高亮：纯白 */
-        div[data-baseweb="radio"] label, div[data-baseweb="checkbox"] label {{
+        /* 主按钮 (Primary) - 深灰渐变 */
+        .stButton > button[kind="primary"] {{
+            background: linear-gradient(180deg, #3a3a3a 0%, #222222 100%) !important;
             color: #ffffff !important;
         }}
-
-        /* =========================
-           2. 按钮 (工业风)
-        ========================= */
-        .stButton > button {{
-            border-radius: 6px !important;
-            font-weight: 500 !important;
-            transition: all 0.2s ease;
-        }}
-        
-        /* ⚫ 主按钮 (Primary) - 深灰渐变 */
-        .stButton > button[kind="primary"] {{
-            background: linear-gradient(180deg, #4a4a4a 0%, #2b2b2b 100%); /* 经典的按钮立体感 */
-            border: 1px solid #555555;
-            color: #ffffff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }}
         .stButton > button[kind="primary"]:hover {{
-            background: linear-gradient(180deg, #5a5a5a 0%, #3b3b3b 100%);
-            border-color: #777777;
-            color: #ffffff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            border-color: #888;
+            color: #fff;
         }}
-        .stButton > button[kind="primary"]:active {{
-            background: #222222;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-        }}
-
-        /* ⚫ 次要按钮 (Secondary) - 隐形 */
-        .stButton > button[kind="secondary"] {{
-            background-color: transparent;
-            border: 1px solid #333333;
-            color: #888888;
-        }}
-        .stButton > button[kind="secondary"]:hover {{
-            border-color: #666666;
-            color: #ffffff;
-            background-color: #1a1a1a;
-        }}
-
+        
         /* =========================
-           3. 全局暗黑优化
+           4. 全局界面 (暗黑)
         ========================= */
-        /* 背景色 */
-        .stApp {{ background-color: #0d0d0d; }} /* 比之前更黑一点点，增加对比度 */
+        .stApp {{ background-color: #000000; }} /* 极致纯黑背景 */
         
-        html, body, [class*="css"] {{
-            font-family: 'Poppins', 'Noto Sans SC', sans-serif !important;
-            -webkit-font-smoothing: antialiased;
-        }}
-
-        /* 侧边栏 */
         [data-testid="stSidebar"] {{
-            background-color: #121212; /* 纯正的深灰黑 */
-            border-right: 1px solid #222222;
+            background-color: #0a0a0a;
+            border-right: 1px solid #1a1a1a;
         }}
         
-        /* 隐藏顶部红线 */
-        header[data-testid="stHeader"] {{ background: transparent; }}
-        header[data-testid="stHeader"] > .decoration {{ display: none; }}
-
-        /* 标题文字：稍微降低一点纯白，用灰白更护眼 */
-        h1, h2, h3 {{
-            color: #eeeeee !important;
-            letter-spacing: 0.5px;
-        }}
-        p, span, label {{
-            color: #a0a0a0 !important;
-        }}
-
-        /* 输入框：极简黑 */
-        .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] > div {{
-            background-color: #1a1a1a !important;
-            border: 1px solid #333333 !important;
+        h1, h2, h3, p, span, label, div {{
+            font-family: 'Poppins', 'Noto Sans SC', sans-serif !important;
             color: #d0d0d0 !important;
-            border-radius: 6px !important;
-        }}
-        .stTextArea textarea:focus, .stTextInput input:focus {{
-            border-color: #888888 !important; /* 聚焦变成亮灰 */
-            box-shadow: none !important;
-        }}
-
-        /* 标签：黑底灰字 */
-        code {{
-            background-color: #222222;
-            color: #bbbbbb;
-            border: 1px solid #333333;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Consolas', monospace !important;
         }}
         
-        /* 链接颜色 (如果有) */
-        a {{
-            color: #bbbbbb !important;
-            text-decoration: underline;
+        /* 输入框 */
+        .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] > div {{
+            background-color: #111111 !important;
+            border: 1px solid #333333 !important;
+            color: #e0e0e0 !important;
+            border-radius: 4px !important;
+        }}
+        
+        /* 标签 Tag */
+        code {{
+            background-color: #222;
+            color: #aaa;
+            border: 1px solid #333;
         }}
     </style>
     """, unsafe_allow_html=True)
