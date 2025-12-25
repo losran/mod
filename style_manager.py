@@ -20,27 +20,53 @@ def apply_pro_style():
         [data-testid="stToolbarActions"], [data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
         header[data-testid="stHeader"] {{ background-color: rgba(0,0,0,0.8) !important; border-bottom: 1px solid #1a1a1a !important; height: 3.5rem !important; }}
 
-        /* 3. 清除顶部幽灵文字并重绘箭头 */
-        [data-testid="stHeader"] button[data-testid*="Sidebar"] * {{ display: none !important; }}
-        [data-testid="stHeader"] button[data-testid*="Sidebar"] {{
-            border: 1px solid #333 !important;
+        /* ==============================
+           定向修复：只针对左侧折叠按钮
+           ============================== */
+        
+        /* 1. 强制隐藏按钮内原本的任何文字和图标，防止乱码 */
+        button[data-testid="stSidebarCollapsedControl"],
+        button[data-testid="stSidebarExpandedControl"] {{
+            color: transparent !important;
+            font-size: 0 !important;
             background-color: #111 !important;
+            border: 1px solid #333 !important;
             width: 36px !important;
             height: 36px !important;
+            border-radius: 6px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             position: relative !important;
         }}
-        [data-testid="stHeader"] button[data-testid*="Sidebar"]::after {{
-            content: "" !important;
-            display: block !important;
-            position: absolute !important;
-            top: 50% !important; left: 50% !important;
-            width: 8px !important; height: 8px !important;
-            border-top: 2px solid #888 !important;
-            border-right: 2px solid #888 !important;
-        }}
-        [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"]::after {{ transform: translate(-65%, -50%) rotate(45deg) !important; }}
-        [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"]::after {{ transform: translate(-35%, -50%) rotate(-135deg) !important; }}
 
+        /* 强制隐藏按钮里所有子标签的内容 */
+        button[data-testid="stSidebarCollapsedControl"] *,
+        button[data-testid="stSidebarExpandedControl"] * {{
+            display: none !important;
+            visibility: hidden !important;
+        }}
+
+        /* 2. 手工画出“三条杠” (不使用任何字体或文本) */
+        button[data-testid="stSidebarCollapsedControl"]::after,
+        button[data-testid="stSidebarExpandedControl"]::after {{
+            content: "" !important;
+            position: absolute !important;
+            display: block !important;
+            width: 18px !important;
+            height: 2px !important;
+            background-color: #888 !important; /* 中间那根杠 */
+            /* 利用投影画出上下两根杠 */
+            box-shadow: 0 -6px 0 #888, 0 6px 0 #888 !important;
+            transition: all 0.2s ease !important;
+        }}
+
+        /* 3. 悬停反馈 */
+        button[data-testid="stSidebarCollapsedControl"]:hover::after,
+        button[data-testid="stSidebarExpandedControl"]:hover::after {{
+            background-color: #fff !important;
+            box-shadow: 0 -6px 0 #fff, 0 6px 0 #fff !important;
+        }}
         /* 4. 核心对齐锁死 (42px 绝对对齐) */
         [data-testid="column"] {{
             display: flex !important;
