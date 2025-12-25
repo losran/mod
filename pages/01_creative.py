@@ -2,38 +2,62 @@ import streamlit as st
 import sys
 import os
 import random
+import time
 
 # ==========================================
-# 🚑 路径修复
+# 🚑 0. 环境自检与路径修复 (防报错)
 # ==========================================
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(current_dir)
 if root_dir not in sys.path:
     sys.path.append(root_dir)
 
+# 尝试引入样式，如果失败也不要崩，直接跳过
 try:
     from style_manager import apply_pro_style
-    from engine_manager import init_data, render_sidebar 
+    # 我们只从 engine_manager 拿数据初始化，不拿 sidebar，防止引用错误
+    from engine_manager import init_data 
 except ImportError:
-    st.error("⚠️ 依赖缺失，请检查目录结构")
     def apply_pro_style(): pass
     def init_data(): pass
-    def render_sidebar(): pass
 
 # ==========================================
-# 🔒 1. 强制展开侧边栏 (因为没有按钮了，必须默认开)
+# 1. 页面初始化 (功能优先)
 # ==========================================
 st.set_page_config(
     layout="wide", 
-    page_title="Creative Engine", 
-    initial_sidebar_state="expanded" # 👈 这一句是关键！
+    page_title="Creative Engine",
+    initial_sidebar_state="expanded" # 强制展开，方便调试
 )
 
-apply_pro_style() 
-render_sidebar()
+# 确保数据已加载
 init_data()
+apply_pro_style()
 
-# 初始化状态
+# ==========================================
+# 🛠️ 2. 内置导航栏 (确保侧边栏绝不是黑的)
+# ==========================================
+def draw_safe_sidebar():
+    with st.sidebar:
+        st.title("IViQD")
+        st.markdown("---")
+        
+        # 使用原生组件，保证绝对能点
+        st.page_link("app.py", label="📥 Smart Ingest")
+        st.page_link("pages/01_creative.py", label="🧠 Creative Core")
+        st.page_link("pages/02_automation.py", label="⚙️ Automation")
+        
+        st.markdown("---")
+        
+        # 显示当前队列状态，增加实用性
+        queue_len = len(st.session_state.get("automation_queue", []))
+        st.caption(f"Queue Status: {queue_len} tasks pending")
+
+draw_safe_sidebar()
+
+# ==========================================
+# 3. 状态初始化 (防止刷新后变量丢失)
+# ==========================================
 if "current_polish_result" not in st.session_state:
     st.session_state.current_polish_result = None
 if "automation_queue" not in st.session_state:
@@ -42,78 +66,102 @@ if "current_qty" not in st.session_state:
     st.session_state.current_qty = 4
 
 # ==========================================
-# 2. 核心逻辑 (隐形混合)
+# 4. 核心业务逻辑 (仓库混合 + 润色)
 # ==========================================
-def get_random_ingredients():
-    if "db_all" not in st.session_state or not st.session_state.db_all:
-        return []
-    db = st.session_state.db_all
-    ingredients = []
-    if "StyleSystem" in db and db["StyleSystem"]:
-        ingredients.append(f"Style: {random.choice(db['StyleSystem'])}")
-    chance = 0.5 
-    categories = ["Technique", "Mood", "Composition", "Texture", "Color"]
-    for cat in categories:
-        if cat in db and db[cat] and random.random() < chance:
-            ingredients.append(f"{cat}: {random.choice(db[cat])}")
-    return ingredients
+def get_warehouse_mix():
+    """从 session_state.db_all 里抓取灵感"""
+    db = st.session_state.get("db_all", {})
+    if not db:
+        return ["(No Data in Warehouse)"]
+    
+    mix = []
+    # 必选风格
+    if db.get("StyleSystem"):
+        mix.append(f"Style: {random.choice(db['StyleSystem'])}")
+    
+    # 随机抓取其他维度
+    tags = ["Technique", "Mood", "Composition", "Color"]
+    for t in tags:
+        if db.get(t) and random.random() > 0.4:
+            mix.append(f"{t}: {random.choice(db[t])}")
+            
+    return mix
 
-def ai_polish_logic(user_input):
-    ingredients = get_random_ingredients()
-    raw_mix = ", ".join(ingredients)
-    simulated_result = f"【AI Concept】Based on '{user_input}' & [{raw_mix}]\n" \
-                       f"Visual: A deconstructed composition featuring the subject with flowing organic lines. " \
-                       f"Texture: utilizing {random.choice(['stippling', 'whip shading', 'solid black'])} for depth."
-    return simulated_result
+def run_creative_engine(user_intent):
+    """模拟 AI 润色过程"""
+    ingredients = get_warehouse_mix()
+    raw_str = " + ".join(ingredients)
+    
+    # 模拟结果
+    return f"""
+    【Creative Concept】
+    **Core Intent:** {user_intent}
+    **Warehouse Mix:** {raw_str}
+    
+    **Visual Execution:**
+    A highly detailed composition utilizing negative space to emphasize the subject. 
+    Lines flow naturally with the body's anatomy. Contrast is achieved through heavy blackwork paired with fine dotwork shading.
+    """
 
 # ==========================================
-# 3. 界面布局
+# 5. 界面布局 (极简生产模式)
 # ==========================================
 st.markdown("## 🧠 Creative Core")
-st.caption("Warehouse Mix (Auto) -> AI Polish -> Automation Pipeline")
+st.caption("Input Intent -> Warehouse Mix (Auto) -> Polish -> Queue")
 st.markdown("---")
 
-col_input, col_action = st.columns([3, 1])
+# 布局：左输入，右控制
+col_main, col_ctrl = st.columns([3, 1])
 
-with col_input:
+with col_main:
     user_input = st.text_area(
-        "Subject / Core Idea", 
-        height=180, 
-        placeholder="输入核心主体..."
+        "Subject / Intent", 
+        height=150, 
+        placeholder="输入核心想法... (例如: 赛博朋克风格的猫)"
     )
 
-with col_action:
-    st.markdown("#### ⚙️ Settings")
-    qty = st.number_input("Batch Size (Max 8)", min_value=1, max_value=8, value=4, step=1)
+with col_ctrl:
+    st.markdown("#### Settings")
+    # 数量控制
+    qty = st.number_input("Batch Size", min_value=1, max_value=8, value=4)
+    
     st.write("")
-    if st.button("✨ Mix & Polish", type="primary", use_container_width=True):
+    # 生成按钮
+    if st.button("✨ Generate", type="primary", use_container_width=True):
         if not user_input.strip():
-            st.warning("⚠️ 请输入内容")
+            st.warning("Please input subject first.")
         else:
-            with st.spinner("Processing..."):
-                result = ai_polish_logic(user_input)
+            with st.spinner("Mixing & Polishing..."):
+                time.sleep(0.5) # 假装思考一下
+                result = run_creative_engine(user_input)
                 st.session_state.current_polish_result = result
                 st.session_state.current_qty = qty
                 st.rerun()
 
 # ==========================================
-# 4. 结果确认区
+# 6. 结果确认与发送
 # ==========================================
 if st.session_state.current_polish_result:
     st.markdown("---")
-    with st.container():
-        c1, c2 = st.columns([3, 1])
-        with c1:
-            st.markdown("### 💎 Polished Result")
-            st.info(st.session_state.current_polish_result)
-            st.caption(f"Batch Configuration: {st.session_state.current_qty} variations will be generated.")
-        with c2:
-            st.markdown("### Action")
-            if st.button("🚀 Send to Automation", type="primary", use_container_width=True):
-                task = {
-                    "prompt": st.session_state.current_polish_result,
-                    "count": st.session_state.current_qty,
-                    "status": "pending"
-                }
-                st.session_state.automation_queue.append(task)
-                st.success(f"✅ Sent! Queue: {len(st.session_state.automation_queue)}")
+    
+    res_col, act_col = st.columns([3, 1])
+    
+    with res_col:
+        st.info(st.session_state.current_polish_result)
+        st.caption(f"Ready to generate {st.session_state.current_qty} variations.")
+        
+    with act_col:
+        # 发送按钮
+        if st.button("🚀 Send to Automation", type="primary", use_container_width=True):
+            # 构造任务数据
+            task = {
+                "id": int(time.time()),
+                "prompt": st.session_state.current_polish_result,
+                "count": st.session_state.current_qty,
+                "status": "pending"
+            }
+            st.session_state.automation_queue.append(task)
+            st.success(f"✅ Sent! (Queue: {len(st.session_state.automation_queue)})")
+            # 稍微停顿让你看到成功提示
+            time.sleep(1)
+            st.rerun()
