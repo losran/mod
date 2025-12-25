@@ -28,28 +28,38 @@ if "input_text" not in st.session_state:
 # 5. 页面布局
 center, right = st.columns([4, 2])
 
-# ===========================
-# 左侧：智能拆分区域
-# ===========================
 with center:
     st.markdown("## ⚡ 智能入库")
     st.session_state.input_text = st.text_area(
         "输入灵感描述",
         st.session_state.input_text,
-        height=220
+        height=220,
+        placeholder="例如：一只赛博朋克风格的猫，霓虹灯背景，正在喝咖啡..."
     )
 
     if st.button("🚀 开始 AI 拆分", use_container_width=True):
         if not st.session_state.input_text:
-            st.warning("请输入内容")
+            st.warning("⚠️ 请先输入一点内容！")
         else:
-            with st.spinner("DeepSeek 正在分析..."):
+            with st.spinner("DeepSeek 正在思考中..."):
+                # 🔥 1. 加强版 Prompt：强制规定格式
                 prompt = f"""
-                将下列内容拆分为最小中文关键词。
-                分类：Subject / Action / Mood / Usage / StyleSystem / Technique / Color / Texture / Composition / Accent
-                用 | 分隔分类，用逗号分隔词。
-                内容：{st.session_state.input_text}
+                任务：提取关键词并分类。
+                
+                请严格遵守以下 JSON 风格格式返回（不要说废话，不要Markdown代码块）：
+                Subject: 词1, 词2
+                Action: 词1, 词2
+                Mood: 词1
+                StyleSystem: 词1
+                
+                可用分类库（必须使用以下英文Key）：
+                Subject (主体), Action (动作), Mood (情绪), Usage (部位), 
+                StyleSystem (风格体系), Technique (技法), Color (色彩), 
+                Texture (质感), Composition (构图), Accent (点缀)
+
+                输入内容：{st.session_state.input_text}
                 """
+                
                 try:
                     res = client.chat.completions.create(
                         model="deepseek-chat",
@@ -57,43 +67,69 @@ with center:
                         temperature=0.1
                     ).choices[0].message.content
 
+                    # 🔥 2. 解析逻辑
                     parsed = []
-                    clean = res.replace("：", ":").replace("\n", "|")
-                    for block in clean.split("|"):
+                    # 预处理：把中文冒号和换行符都统一
+                    clean_res = res.replace("：", ":").replace("\n", "|").replace("，", ",")
+                    
+                    for block in clean_res.split("|"):
                         if ":" in block:
                             cat, words = block.split(":", 1)
                             cat = cat.strip()
+                            
+                            # 模糊匹配：只要 AI 返回的分类包含我们的 Key 就算对
+                            # 例如 AI 返回 "Subject(主体)" 也能识别出 "Subject"
                             target_key = None
-                            # 模糊匹配分类 key
                             for k in WAREHOUSE:
-                                if k.lower() in cat.lower():
+                                if k.lower() in cat.lower(): 
                                     target_key = k
                                     break
                             
                             if target_key:
                                 for w in words.split(","):
                                     w = w.strip()
-                                    if w:
+                                    # 过滤掉空字符串和奇怪的符号
+                                    if w and w not in [".", "。", "无", "none"]:
                                         parsed.append({"cat": target_key, "val": w})
+                    
                     st.session_state.ai_results = parsed
+
+                    # 🔥 3. 调试兜底：如果解析完是空的，把 AI 原话说出来
+                    if not parsed:
+                        st.warning("🤔 AI 回复了，但格式没对上，无法自动提取。")
+                        with st.expander("查看 AI 原始回复 (用于排查)", expanded=True):
+                            st.write(res)
+
                 except Exception as e:
-                    st.error(f"AI 请求失败: {e}")
+                    st.error(f"❌ 请求失败: {e}")
 
     # 显示拆分结果
     if st.session_state.ai_results:
+        st.success(f"✅ 成功提取 {len(st.session_state.ai_results)} 个关键词")
         st.markdown("### 🧠 拆分结果")
+        
+        # 结果显示区域
         selected = []
         cols = st.columns(3)
         for i, item in enumerate(st.session_state.ai_results):
             with cols[i % 3]:
-                if st.checkbox(f'{item["cat"]} · {item["val"]}', key=f'chk_{i}', value=True):
+                # 默认勾选
+                if st.checkbox(f'**{item["cat"]}** · {item["val"]}', key=f'chk_{i}', value=True):
                     selected.append(item)
+        
+        st.divider()
 
-        if st.button("📥 确认入库", type="primary"):
+        if st.button("📥 确认入库", type="primary", use_container_width=True):
             changed_cats = set()
-            # 确保数据已初始化
+            # 确保 db_all 存在
             if "db_all" not in st.session_state:
-                init_data()
+                try:
+                    # 尝试重新初始化
+                    from engine_manager import init_data
+                    init_data()
+                except:
+                    st.error("无法连接数据库")
+                    st.stop()
                 
             for item in selected:
                 cat = item["cat"]
@@ -107,12 +143,18 @@ with center:
             
             if changed_cats:
                 with st.spinner("正在同步到 GitHub..."):
+                    # 引入保存函数
+                    from engine_manager import save_data, WAREHOUSE
                     for cat in changed_cats:
                         save_data(WAREHOUSE[cat], st.session_state.db_all[cat])
-                st.success(f"已更新分类: {', '.join(changed_cats)}")
-                st.session_state.ai_results = []
+                
+                st.success(f"🎉 已更新分类: {', '.join(changed_cats)}")
+                st.session_state.ai_results = [] # 清空结果
+                import time
+                time.sleep(1)
                 st.rerun()
-
+            else:
+                st.info("没有新的词需要入库 (可能已经存在了)")
 # ===========================
 # 右侧：仓库管理区域
 # ===========================
