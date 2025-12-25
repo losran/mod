@@ -5,35 +5,48 @@ def apply_pro_style():
     font_url = "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
     icon_url = "https://fonts.googleapis.com/icon?family=Material+Icons"
 
+    # 🔥 注意：所有的样式代码必须写在这个三引号 """ 里面！
     st.markdown(f"""
     <style>
         @import url('{font_url}');
         @import url('{icon_url}');
 
         /* ==================================================
-           1. 🧠 核弹级隐藏：彻底消灭顶部栏和它的背景色
+           1. 🎯 修复顶部：去除蓝色背景块 & 隐藏装饰线
         ================================================== */
-        /* 隐藏工具栏内容 (Share, Star, Menu) */
+        /* 强制顶部 Header 透明，解决“蓝色色块”问题 */
+        header[data-testid="stHeader"] {{
+            background: transparent !important;
+            background-color: transparent !important;
+        }}
+        
+        /* 隐藏顶部那条彩色的装饰线 */
+        [data-testid="stDecoration"] {{
+            visibility: hidden;
+            display: none;
+        }}
+
+        /* 隐藏右上角工具栏 (Share, Star, Menu) */
         [data-testid="stToolbar"] {{
             visibility: hidden !important;
             display: none !important;
         }}
-        
-        /* 隐藏顶部彩虹装饰线 */
-        [data-testid="stDecoration"] {{
-            display: none !important;
-        }}
-        
-
-        
-        /* 顺手把顶部装饰线也藏掉 */
-        div[data-testid="stDecoration"] {
-            visibility: hidden;
-            display: none;
-        }
 
         /* ==================================================
-           2. 🩹 修复左上角图标乱码
+           2. 🔴 红色滑块 (高对比度方案)
+        ================================================== */
+        /* 强制系统主色为红色，确保滑块是红的 */
+        :root {{
+            --primary-color: #ff4b4b !important;
+        }}
+
+        /* 修复滑块轨道背景，让它在黑底上能看清 */
+        div[data-baseweb="slider"] div {{
+            background-color: #444444 !important;
+        }}
+
+        /* ==================================================
+           3. 🩹 修复图标文字乱码
         ================================================== */
         .material-icons, .material-icons-outlined, .material-icons-two-tone, 
         .material-icons-round, .material-icons-sharp {{
@@ -41,27 +54,10 @@ def apply_pro_style():
         }}
 
         /* ==================================================
-           3. 🎨 滑块与暗黑主题美化
+           4. 🌑 全局暗黑基调
         ================================================== */
-        /* 滑块轨道 (深灰) */
-        div[data-baseweb="slider"] div {{ background-color: #333 !important; }}
-        /* 选中条 (亮银色) */
-        div[data-baseweb="slider"] div[class*="css"] {{ background-color: #e0e0e0 !important; }}
-        /* 圆点 (纯白发光) */
-        div[role="slider"] {{
-            background-color: #ffffff !important;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8) !important;
-            border: none !important;
-        }}
-        /* 数值框 */
-        div[data-testid="stThumbValue"] {{
-            background-color: #000 !important;
-            color: #fff !important;
-            border: 1px solid #fff !important;
-        }}
-
-        /* 全局背景 */
         .stApp {{ background-color: #000000; }}
+        
         [data-testid="stSidebar"] {{
             background-color: #0a0a0a;
             border-right: 1px solid #1a1a1a;
@@ -73,7 +69,7 @@ def apply_pro_style():
             color: #d0d0d0;
         }}
         
-        /* 输入框 */
+        /* 输入框优化 */
         .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] > div {{
             background-color: #111111 !important;
             border: 1px solid #333333 !important;
@@ -81,7 +77,7 @@ def apply_pro_style():
             border-radius: 4px !important;
         }}
         
-        /* 按钮 */
+        /* 按钮样式 */
         .stButton > button {{
             border-radius: 4px !important;
             border: 1px solid #444 !important;
