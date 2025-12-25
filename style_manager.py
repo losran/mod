@@ -76,7 +76,30 @@ def apply_pro_style():
         [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"]::after {{
             transform: translate(-35%, -50%) rotate(-135deg) !important;
         }}
+        /* ==============================
+           6. 局部对齐补丁 (f-string 双括号版)
+           ============================== */
+        
+        /* 强制让列容器内的组件底部对齐 */
+        [data-testid="column"] {{
+            display: flex !important;
+            align-items: flex-end !important;
+        }}
 
+        /* 彻底移除 number_input 的标题占位和底部边距 */
+        div[data-testid="stNumberInput"] label {{
+            display: none !important;
+        }}
+        
+        div[data-testid="stNumberInput"] {{
+            margin-bottom: 0px !important;
+            padding-bottom: 0px !important;
+        }}
+
+        /* 统一输入框高度，确保与按钮严丝合缝 */
+        [data-testid="stNumberInput"] input {{
+            height: 42px !important;
+        }}
         /* Hover 反馈 */
         [data-testid="stHeader"] button:hover {{ border-color: #fff !important; background-color: #222 !important; }}
         [data-testid="stHeader"] button:hover::after {{ border-color: #fff !important; }}
