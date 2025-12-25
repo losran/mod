@@ -10,62 +10,66 @@ def apply_pro_style():
         @import url('{icon_url}');
 
         /* ==================================================
-           🔒 1. 侧边栏“焊死”模式 (No Collapse)
-           直接隐藏侧边栏的开关按钮，让它看起来像是永久固定的。
+           1. 侧边栏基础修复 (确保绝对可见)
         ================================================== */
+        /* 背景色：深灰，不是纯黑，防止和背景融为一体 */
+        [data-testid="stSidebar"] {{
+            background-color: #111111 !important;
+            border-right: 1px solid #333 !important;
+        }}
+        
+        /* 强制侧边栏里所有文字变白 */
+        [data-testid="stSidebar"] *, 
+        [data-testid="stSidebar"] p, 
+        [data-testid="stSidebar"] span, 
+        [data-testid="stSidebar"] div {{
+            color: #ffffff !important;
+        }}
+        
+        /* 侧边栏链接样式 */
+        [data-testid="stSidebar"] a {{
+            color: #e0e0e0 !important;
+        }}
+
+        /* ❌ 删除所有隐藏侧边栏开关的代码，恢复 Streamlit 原生箭头 */
         [data-testid="stSidebarCollapsedControl"] {{
-            display: none !important;
-        }}
-        
-        /* 以防万一，把移动端的关闭按钮也藏了 */
-        section[data-testid="stSidebar"] button {{
-            display: none !important;
+            display: block !important;
+            color: #ffffff !important;
         }}
 
         /* ==================================================
-           2. Header 透明化
+           2. 顶部 Header (恢复默认，确保不遮挡)
         ================================================== */
+        /* 暂时取消透明效果，确保功能正常 */
         header[data-testid="stHeader"] {{
-            background: transparent !important;
-            border: none !important;
-            pointer-events: none !important;
-        }}
-        
-        /* 隐藏右上角工具栏 */
-        [data-testid="stToolbar"], [data-testid="stDecoration"] {{
-            display: none !important;
+            background-color: #000000 !important;
+            opacity: 1 !important;
         }}
 
         /* ==================================================
-           3. 银色主题 & 交互
+           3. 银色主题配色
         ================================================== */
-        :root {{ --primary-color: #C0C0C0 !important; --text-color: #E0E0E0 !important; }}
+        :root {{ --primary-color: #C0C0C0 !important; }}
         
         .stApp {{ background-color: #000000; }}
-        [data-testid="stSidebar"] {{ 
-            background-color: #0a0a0a; 
-            border-right: 1px solid #1a1a1a; 
-            /* 确保侧边栏宽度合适，显得像固定布局 */
-            min-width: 250px !important; 
-        }}
-
-        /* 按钮高亮逻辑 */
+        
+        /* 按钮样式 */
         .stButton > button[kind="primary"] {{
-            background: linear-gradient(135deg, #e0e0e0 0%, #ffffff 100%) !important;
-            color: #000000 !important;
-            border: 1px solid #FFFFFF !important;
-            box-shadow: 0 0 12px rgba(255, 255, 255, 0.4) !important;
-            font-weight: 700 !important;
+            background: #e0e0e0 !important;
+            color: #000 !important;
+            border: 1px solid #fff !important;
+            font-weight: bold !important;
         }}
+        
         .stButton > button[kind="secondary"] {{
-            background: #111 !important; color: #888 !important; border: 1px solid #333 !important;
+            background: #222 !important;
+            color: #aaa !important;
+            border: 1px solid #444 !important;
         }}
         
-        /* 滑块 */
-        div[role="slider"] {{ background-color: #FFF !important; border: 1px solid #C0C0C0 !important; }}
-        
-        /* 字体 */
-        h1, h2, h3, p, span, div {{ font-family: 'Poppins', sans-serif !important; color: #d0d0d0; }}
-        .material-icons {{ font-family: 'Material Icons' !important; }}
+        h1, h2, h3, p, span {{
+            font-family: 'Poppins', sans-serif !important;
+            color: #e0e0e0;
+        }}
     </style>
     """, unsafe_allow_html=True)
