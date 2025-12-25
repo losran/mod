@@ -4,27 +4,30 @@ import os
 import random
 
 # ==========================================
-# 🚑 关键修复：告诉 Python 去上一级目录找文件
+# 🚑 路径修复
 # ==========================================
 current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
+root_dir = os.path.dirname(current_dir)
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
 
 try:
     from style_manager import apply_pro_style
     from engine_manager import init_data, render_sidebar 
 except ImportError:
-    st.error(f"⚠️ 依然找不到依赖文件。请确认 style_manager.py 在这个路径: {parent_dir}")
-    #以此防止代码直接崩溃
+    st.error("⚠️ 依赖缺失，请检查目录结构")
     def apply_pro_style(): pass
     def init_data(): pass
     def render_sidebar(): pass
 
 # ==========================================
-# 1. 页面初始化 (强制默认展开侧边栏)
+# 🔒 1. 强制展开侧边栏 (因为没有按钮了，必须默认开)
 # ==========================================
-# initial_sidebar_state="expanded" -> 保证一进来就能看到侧边栏
-st.set_page_config(layout="wide", page_title="Creative Engine", initial_sidebar_state="expanded")
+st.set_page_config(
+    layout="wide", 
+    page_title="Creative Engine", 
+    initial_sidebar_state="expanded" # 👈 这一句是关键！
+)
 
 apply_pro_style() 
 render_sidebar()
@@ -39,10 +42,9 @@ if "current_qty" not in st.session_state:
     st.session_state.current_qty = 4
 
 # ==========================================
-# 2. 核心逻辑 (隐形自动混合)
+# 2. 核心逻辑 (隐形混合)
 # ==========================================
 def get_random_ingredients():
-    """内部隐形混合逻辑"""
     if "db_all" not in st.session_state or not st.session_state.db_all:
         return []
     db = st.session_state.db_all
@@ -57,7 +59,6 @@ def get_random_ingredients():
     return ingredients
 
 def ai_polish_logic(user_input):
-    """AI 润色模拟"""
     ingredients = get_random_ingredients()
     raw_mix = ", ".join(ingredients)
     simulated_result = f"【AI Concept】Based on '{user_input}' & [{raw_mix}]\n" \
@@ -66,7 +67,7 @@ def ai_polish_logic(user_input):
     return simulated_result
 
 # ==========================================
-# 3. 界面布局 (极简生产版)
+# 3. 界面布局
 # ==========================================
 st.markdown("## 🧠 Creative Core")
 st.caption("Warehouse Mix (Auto) -> AI Polish -> Automation Pipeline")
@@ -78,7 +79,7 @@ with col_input:
     user_input = st.text_area(
         "Subject / Core Idea", 
         height=180, 
-        placeholder="输入核心主体，例如：一只燃烧的蝴蝶，赛博朋克风格..."
+        placeholder="输入核心主体..."
     )
 
 with col_action:
