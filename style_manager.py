@@ -24,19 +24,7 @@ def apply_pro_style():
             display: none !important;
         }}
         
-        /* 🔥🔥🔥 关键新增：让整个顶部容器透明消失 🔥🔥🔥 */
-        [data-testid="stHeader"] {{
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            /* 如果觉得顶部还有空白占位，可以把下面这行注释解开，强制高度为0 */
-            /* height: 0px !important; */
-        }}
-        /* 🔥🔥🔥 局部修正：强制把顶部背景变成透明 🔥🔥🔥 */
-        header[data-testid="stHeader"] {
-            background: transparent !important;
-            background-color: transparent !important; 
-        }
+
         
         /* 顺手把顶部装饰线也藏掉 */
         div[data-testid="stDecoration"] {
