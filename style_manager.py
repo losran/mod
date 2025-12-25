@@ -80,4 +80,10 @@ def apply_pro_style():
         
         /* Metric 组件数值颜色 */
         [data-testid="stMetricValue"] {
-            color: #e
+            color: #e6edf3;
+        }
+        [data-testid="stMetricLabel"] {
+            color: #8b949e;
+        }
+    </style>
+    """, unsafe_allow_html=True)
