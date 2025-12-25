@@ -12,7 +12,7 @@ client = OpenAI(
     base_url="https://api.deepseek.com"
 )
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
-REPO = "losran/tattoo-ai-tool"
+REPO = "losran/mod"
 
 WAREHOUSE = {
     "Subject": "data/subjects.txt",
