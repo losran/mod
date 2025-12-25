@@ -32,6 +32,17 @@ def apply_pro_style():
             /* 如果觉得顶部还有空白占位，可以把下面这行注释解开，强制高度为0 */
             /* height: 0px !important; */
         }}
+        /* 🔥🔥🔥 局部修正：强制把顶部背景变成透明 🔥🔥🔥 */
+        header[data-testid="stHeader"] {
+            background: transparent !important;
+            background-color: transparent !important; 
+        }
+        
+        /* 顺手把顶部装饰线也藏掉 */
+        div[data-testid="stDecoration"] {
+            visibility: hidden;
+            display: none;
+        }
 
         /* ==================================================
            2. 🩹 修复左上角图标乱码
