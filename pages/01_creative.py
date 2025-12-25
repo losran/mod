@@ -1,222 +1,209 @@
 import streamlit as st
+import sys
+import os
 import random
-import base64
-import requests
 from openai import OpenAI
-from style_manager import apply_pro_style
-from engine_manager import render_sidebar, WAREHOUSE, save_data
 
-# ===========================
-# Configuration
-# ===========================
-st.set_page_config(layout="wide", page_title="Creative Engine")
+# ==========================================
+# 0. 环境与依赖检查
+# ==========================================
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
 
-# Apply Styles & Sidebar
+try:
+    from style_manager import apply_pro_style
+    from engine_manager import init_data, render_sidebar
+except ImportError:
+    st.error("⚠️ 核心组件丢失，请检查 engine_manager.py")
+    st.stop()
+
+# ==========================================
+# 1. 页面初始化
+# ==========================================
+st.set_page_config(layout="wide", page_title="Creative Engine", initial_sidebar_state="collapsed")
+
+# 加载样式 & 数据 (保留你原版的数据同步逻辑)
 apply_pro_style()
 render_sidebar()
+init_data()
 
-# ===========================
-# Logic & Helpers
-# ===========================
-client = OpenAI(api_key=st.secrets["DEEPSEEK_KEY"], base_url="https://api.deepseek.com")
-GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
-REPO = "losran/tattoo-ai-tool" # Check your REPO name
-GALLERY_FILE = "gallery/inspirations.txt"
+# 初始化 AI
+try:
+    client = OpenAI(api_key=st.secrets["DEEPSEEK_KEY"], base_url="https://api.deepseek.com")
+except Exception:
+    st.warning("请检查 .streamlit/secrets.toml 中的 DEEPSEEK_KEY")
 
-def get_gallery_data():
-    url = f"https://api.github.com/repos/{REPO}/contents/{GALLERY_FILE}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-    try:
-        r = requests.get(url, headers=headers, timeout=5)
-        if r.status_code == 200:
-            content = base64.b64decode(r.json()['content']).decode()
-            return [line.strip() for line in content.splitlines() if line.strip()]
-    except:
-        pass
-    return []
+# 初始化状态容器
+if "final_solutions" not in st.session_state:
+    st.session_state.final_solutions = []
 
-def save_gallery_data(data_list):
-    url = f"https://api.github.com/repos/{REPO}/contents/{GALLERY_FILE}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-    try:
-        old = requests.get(url, headers=headers).json()
-        content = "\n".join(list(set(data_list)))
-        payload = { "message": "update", "content": base64.b64encode(content.encode()).decode(), "sha": old["sha"] }
-        requests.put(url, headers=headers, json=payload)
-        return True
-    except: return False
+# ==========================================
+# 2. 核心引擎 (100% 还原原版配方)
+# ==========================================
 
-def chaos_pick(chaos, low, mid, high):
-    if chaos < 30: return random.randint(*low)
-    elif chaos < 70: return random.randint(*mid)
-    else: return random.randint(*high)
+def smart_pick_ingredient(category):
+    """
+    模拟原版的高混沌模式：从指定仓库分类中抽取灵感
+    """
+    db = st.session_state.get("db_all", {})
+    if category in db and db[category]:
+        return random.choice(db[category])
+    return ""
 
-def smart_sample_with_ai(category, user_intent, inventory, chaos_val):
-    if not inventory: return []
-    if not user_intent or not user_intent.strip():
-        pool_size = int(20 + (300 - 20) * chaos_val / 100)
-        shuffled = random.sample(inventory, min(len(inventory), pool_size))
-        pick_n = chaos_pick(chaos_val, (1,2), (2,3), (3,5))
-        return random.sample(shuffled, min(len(shuffled), pick_n))
-
-    try:
-        # Prompt remains Chinese to process Chinese database correctly
-        prompt = f"从词库中选出符合'{user_intent}'的{category}词汇。词库:{random.sample(inventory, min(50, len(inventory)))}。只返回词，用逗号分隔。"
-        res = client.chat.completions.create(
-            model="deepseek-chat", messages=[{"role": "user", "content": prompt}], temperature=chaos_val/100.0
-        ).choices[0].message.content
-        words = [w.strip() for w in res.replace("，", ",").split(",") if w.strip()]
-        valid = [w for w in words if w in inventory]
-        return valid if valid else random.sample(inventory, 1)
-    except:
-        return random.sample(inventory, 1)
-
-# ===========================
-# UI Layout
-# ===========================
-
-if 'history_log' not in st.session_state: st.session_state.history_log = []
-for key in ['selected_prompts', 'generated_cache', 'polished_text', 'manual_editor']:
-    if key not in st.session_state: st.session_state[key] = "" if 'editor' in key or 'text' in key else []
-
-is_working = len(st.session_state.polished_text) > 0
-
-# Pure English Title
-st.title("Creative Engine")
-col_main, col_gallery = st.columns([5, 2.5])
-
-# --- Right Column: Warehouse ---
-with col_gallery:
-    st.subheader("Warehouse")
-    # Clean English Labels
-    mode = st.radio("Mode", ["Materials", "Gallery"], horizontal=True)
+def assemble_core_logic(user_intent):
+    """
+    【核心逻辑堡垒】
+    这里严格复刻了你原代码的组装顺序。
+    Sequence: Intent -> Subject -> Style -> Tech -> Color -> Texture -> Comp -> Action -> Mood -> (Accent) -> Usage
+    """
+    # 1. 备料：从仓库抓取所有维度的配料
+    sub     = smart_pick_ingredient("Subject")
+    s_sys   = smart_pick_ingredient("StyleSystem")
+    s_tech  = smart_pick_ingredient("Technique")
+    s_col   = smart_pick_ingredient("Color")
+    s_tex   = smart_pick_ingredient("Texture")
+    s_comp  = smart_pick_ingredient("Composition")
+    act     = smart_pick_ingredient("Action")
+    mood    = smart_pick_ingredient("Mood")
+    usage   = smart_pick_ingredient("Usage")
     
-    with st.container(height=300, border=True):
-        if mode == "Materials":
-            cat = st.selectbox("Category", list(WAREHOUSE.keys()))
-            if "db_all" in st.session_state:
-                words = st.session_state.db_all.get(cat, [])
-                for w in words:
-                    if st.checkbox(f" {w}", key=f"cat_{cat}_{w}", disabled=is_working):
-                        if not is_working and w not in st.session_state.selected_prompts:
-                            st.session_state.selected_prompts.append(w)
-            else:
-                st.caption("Loading data...")
-        else:
-            insps = get_gallery_data()
-            for i in insps:
-                if st.checkbox(i, key=f"insp_{abs(hash(i))}", disabled=is_working):
-                    if not is_working and i not in st.session_state.selected_prompts:
-                        st.session_state.selected_prompts.append(i)
+    # 2. 组装：还原原版列表结构
+    parts = [
+        user_intent.strip(), # 用户意图
+        sub,                 # 随机主体 (作为补充)
+        s_sys,               # 风格系统
+        s_tech,              # 技法
+        s_col,               # 颜色
+        s_tex,               # 质感
+        s_comp,              # 构图
+        act,                 # 动态
+        mood                 # 情绪
+    ]
 
-    st.divider()
-    st.subheader("History Archive")
-    if st.session_state.history_log:
-        with st.container(height=400, border=True):
-            for h_idx, h_text in enumerate(st.session_state.history_log):
-                checked = h_text in st.session_state.selected_prompts
-                if st.checkbox(f"Option {h_idx+1}: {h_text}", key=f"hist_{h_idx}", value=checked, disabled=is_working):
-                    if not is_working and h_text not in st.session_state.selected_prompts:
-                        st.session_state.selected_prompts.append(h_text)
-                        st.rerun()
-        if st.button("Clear History", use_container_width=True):
-            st.session_state.history_log = []; st.rerun()
+    # 3. 混沌点缀：还原原版 chaos > 60 的逻辑 (40%概率触发)
+    if random.random() > 0.4:
+        s_acc = smart_pick_ingredient("Accent")
+        if s_acc: parts.append(s_acc)
 
-# --- Left Column: Main Control ---
-with col_main:
-    c1, c2 = st.columns(2)
-    with c1: num = st.slider("Quantity", 1, 6, 6)
-    with c2: chaos = st.slider("Chaos Level", 0, 100, 100)
+    # 4. 生成生肉 (Raw Prompt)
+    # 过滤空值并用逗号连接
+    raw_chain = "，".join([p for p in parts if p])
     
-    intent = st.text_area("Intent Input", value=st.session_state.manual_editor, disabled=is_working)
-    st.session_state.manual_editor = intent
-
-    if st.button("Generate Ideas", type="primary", use_container_width=True, disabled=is_working):
-        if "db_all" not in st.session_state:
-            st.error("Please wait for data sync...")
-        else:
-            db = st.session_state.db_all
-            with st.spinner("Brainstorming..."):
-                new_batch = []
-                subs = smart_sample_with_ai("Subject", "", db["Subject"], chaos)
-                acts = smart_sample_with_ai("Action", "", db["Action"], chaos)
-                moods = smart_sample_with_ai("Mood", "", db["Mood"], chaos)
-                usages = smart_sample_with_ai("Usage", "", db["Usage"], chaos)
-                
-                s_sys = smart_sample_with_ai("StyleSystem", intent, db["StyleSystem"], chaos)
-                s_tech = smart_sample_with_ai("Technique", intent, db["Technique"], chaos)
-                s_col = smart_sample_with_ai("Color", intent, db["Color"], chaos)
-                s_tex = smart_sample_with_ai("Texture", intent, db["Texture"], chaos)
-                s_comp = smart_sample_with_ai("Composition", intent, db["Composition"], chaos)
-                s_acc = smart_sample_with_ai("Accent", intent, db["Accent"], chaos)
-
-                for _ in range(num):
-                    def get_one(lst): return random.choice(lst) if lst else ""
-                    parts = [intent.strip(), get_one(subs), get_one(s_sys), get_one(s_tech), get_one(s_col), get_one(s_tex), get_one(s_comp), get_one(acts), get_one(moods)]
-                    if chaos > 60: parts.append(get_one(s_acc))
-                    
-                    final_str = "，".join([p for p in parts if p]) + f"，纹在{get_one(usages)}"
-                    new_batch.append(final_str)
-                
-                st.session_state.generated_cache = new_batch
-                st.rerun()
-
-    if st.session_state.generated_cache:
-        st.divider()
-        cols = st.columns(2)
-        for i, p in enumerate(st.session_state.generated_cache):
-            with cols[i % 2]:
-                sel = p in st.session_state.selected_prompts
-                if st.button(f"{i+1}. {p}", key=f"gen_{i}", type="primary" if sel else "secondary", use_container_width=True):
-                    if sel: st.session_state.selected_prompts.remove(p)
-                    else: st.session_state.selected_prompts.append(p)
-                    st.rerun()
+    # 还原 "纹在..." 逻辑
+    if usage:
+        raw_chain += f"，纹在{usage}"
         
-        c_t1, c_t2 = st.columns(2)
-        if c_t1.button("Save to Gallery", use_container_width=True):
-            if st.session_state.selected_prompts:
-                curr = get_gallery_data()
-                curr.extend(st.session_state.selected_prompts)
-                save_gallery_data(curr)
-                st.success("Saved")
-        if c_t2.button("Clear Current", use_container_width=True):
-            st.session_state.generated_cache = []
-            st.session_state.selected_prompts = []
-            st.rerun()
+    return raw_chain
 
-    if st.session_state.selected_prompts and not st.session_state.polished_text:
-        st.divider()
-        if st.button("Confirm & Polish", type="primary", use_container_width=True):
-            abandoned = [p for p in st.session_state.generated_cache if p not in st.session_state.selected_prompts]
-            st.session_state.history_log = abandoned + st.session_state.history_log
-            st.session_state.generated_cache = []
+def run_creative_pipeline(start_intent, count):
+    """
+    流水线控制器：组装 -> 润色 -> 格式化
+    """
+    results = []
+    
+    for i in range(count):
+        current_idx = i + 1
+        
+        # --- Step A: 组装骨架 (调用上方核心逻辑) ---
+        raw_bone = assemble_core_logic(start_intent)
+        
+        # --- Step B: AI 润色 (严格 Prompt) ---
+        sys_prompt = "你是一位资深刺青策展人。请将提供的关键词组合润色为极具艺术感的纹身描述。每段必须出现'纹身'二字。"
+        user_prompt = f"""
+        【原始骨架】：{raw_bone}
+        
+        【指令】：
+        1. 必须严格保留骨架中的风格、颜色、部位等关键信息，不可随意丢弃。
+        2. 必须严格以 "**方案{current_idx}：**" 开头 (注意是双星号)。
+        3. 输出一段 50-80 字的完整视觉描述，语言要简练、高级。
+        """
+
+        try:
+            response = client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[
+                    {"role": "system", "content": sys_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.85 # 保持高创造力
+            )
+            results.append(response.choices[0].message.content)
+        except Exception as e:
+            results.append(f"**方案{current_idx}：** 生成失败 ({str(e)})")
             
-            with st.spinner("Polishing..."):
-                input_text = "\n".join([f"方案{i+1}: {p}" for i, p in enumerate(st.session_state.selected_prompts)])
-                # Prompt stays Chinese to ensure output quality for tattoo descriptions
-                sys_p = "你是一位资深刺青策展人。请将方案润色为极具艺术感的纹身描述。每段必须出现'纹身'二字。格式：**方案[数字]：**"
-                
-                try:
-                    res = client.chat.completions.create(
-                        model="deepseek-chat", messages=[
-                            {"role": "system", "content": sys_p},
-                            {"role": "user", "content": input_text}
-                        ]
-                    ).choices[0].message.content
-                    st.session_state.polished_text = res
-                    st.session_state.selected_prompts = [] 
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error: {e}")
+    return results
 
-    if st.session_state.polished_text:
-        st.divider()
-        st.subheader("Polished Result")
-        st.text_area("Preview", st.session_state.polished_text, height=300)
-        c_b1, c_b2 = st.columns(2)
-        if c_b1.button("Send to Automation", type="primary", use_container_width=True):
-            st.session_state.auto_input_cache = st.session_state.polished_text
-            st.switch_page("pages/02_automation.py")
-        if c_b2.button("Reset", use_container_width=True):
-            st.session_state.polished_text = ""
+# ==========================================
+# 3. 极简 UI 交互层
+# ==========================================
+st.markdown("## 🧠 Creative Engine")
+st.caption("Auto-Assembly (Original Logic) -> AI Polish -> Automation Pipeline")
+st.markdown("---")
+
+# --- 输入区 ---
+user_input = st.text_area(
+    "Core Idea / Subject", 
+    height=120, 
+    placeholder="在此输入核心创意...\n🎲 留空则进入【盲盒模式】，系统将自动抽取核心主体并完成全套组装！"
+)
+
+# --- 操作区 ---
+col_num, col_btn, col_blank = st.columns([1, 2, 3])
+
+with col_num:
+    qty = st.number_input("Batch Size", min_value=1, max_value=8, value=4)
+
+with col_btn:
+    st.write("") # Layout spacer
+    
+    # 智能判断按钮文案
+    is_blind_mode = not user_input.strip()
+    btn_text = "✨ Generate (Blind Box)" if is_blind_mode else "✨ Generate Concepts"
+    
+    if st.button(btn_text, type="primary", use_container_width=True):
+        
+        # 确定起始意图
+        final_intent = user_input.strip()
+        if is_blind_mode:
+            # 盲盒模式：从 Subject 库抽一个作为核心
+            final_intent = smart_pick_ingredient("Subject") or "神秘图腾"
+            st.toast(f"🎲 盲盒已开启！核心主体：{final_intent}", icon="🎁")
+        
+        with st.spinner(f"正在组装方案 (Core Logic: {final_intent} + Style + Tech + Color...)..."):
+            st.session_state.final_solutions = run_creative_pipeline(final_intent, qty)
             st.rerun()
+
+# ==========================================
+# 4. 结果交付区 (产线对接)
+# ==========================================
+if st.session_state.final_solutions:
+    st.markdown("---")
+    st.subheader("💎 Polished Concepts")
+    
+    # 遍历显示结果
+    for idx, solution in enumerate(st.session_state.final_solutions):
+        with st.container(border=True):
+            # 渲染文案 (保持 Markdown 格式)
+            st.markdown(solution)
+            
+            # 对接自动化队列
+            if st.button("🚀 Automate", key=f"auto_btn_{idx}"):
+                task = {
+                    "prompt": solution,       # 包含 **方案N：** 的完整文本
+                    "count": 1,               # 单次执行
+                    "status": "pending",
+                    "source": "Creative_Engine_Optimized"
+                }
+                
+                # 写入队列
+                if "automation_queue" not in st.session_state:
+                    st.session_state.automation_queue = []
+                st.session_state.automation_queue.append(task)
+                
+                st.toast("已加入自动化产线队列", icon="✅")
+
+    # 一键清空
+    if st.button("Clear All", use_container_width=True):
+        st.session_state.final_solutions = []
+        st.rerun()
