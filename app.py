@@ -17,10 +17,19 @@ REPO = "losran/mod"
 WAREHOUSE = {
     "Subject": "data/subjects.txt",
     "Action": "data/actions.txt",
-    "Style": "data/styles.txt",
     "Mood": "data/moods.txt",
     "Usage": "data/usage.txt",
+
+    # Style 系统（完整）
+    "StyleSystem": "data/styles_system.txt",
+    "Technique": "data/styles_technique.txt",
+    "Color": "data/styles_color.txt",
+    "Texture": "data/styles_texture.txt",
+    "Composition": "data/styles_composition.txt",
+    "Accent": "data/styles_accent.txt",
 }
+
+
 
 # ======================
 # GitHub 工具函数（唯一数据源）
@@ -46,6 +55,10 @@ def save_data(path, data):
     }
     requests.put(url, headers=headers, json=payload)
 
+db_all = {
+    k: get_data(path)
+    for k, path in WAREHOUSE.items()
+}
 # ======================
 # Session 初始化（只存 UI 状态）
 # ======================
