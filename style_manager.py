@@ -1,112 +1,90 @@
 import streamlit as st
 
 def apply_pro_style():
+    # 1. 引入字体
     font_url = "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
     icon_url = "https://fonts.googleapis.com/icon?family=Material+Icons"
 
     st.markdown(f"""
     <style>
-    @import url('{font_url}');
-    @import url('{icon_url}');
+        @import url('{font_url}');
+        @import url('{icon_url}');
 
-    /* ===============================
-       1. 顶部 & 工具栏清理
-    =============================== */
-    header[data-testid="stHeader"] {{
-        background: transparent !important;
-    }}
-    [data-testid="stDecoration"],
-    [data-testid="stToolbar"] {{
-        display: none !important;
-    }}
+        /* ==================================================
+           1. ⚪ 银色滑块 (Silver Slider) - 独家定制
+        ================================================== */
+        /* 核心：把系统主色调改成“银灰色” */
+        :root {{
+            --primary-color: #C0C0C0 !important; /* 银色 */
+            --text-color: #E0E0E0 !important;    /* 文字也是银白 */
+        }}
 
-    /* ===============================
-       2. 全局暗黑基调
-    =============================== */
-    .stApp {{
-        background-color: #000000;
-    }}
+        /* 优化：让滑块的圆点(把手)更亮、发光，像金属一样 */
+        div[role="slider"] {{
+            background-color: #FFFFFF !important; /* 纯白圆点 */
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6) !important; /* 发光光晕 */
+            border: 1px solid #C0C0C0 !important;
+        }}
+        
+        /* 修复：稍微加深一点滑块数值的背景，让它看得清 */
+        div[data-testid="stThumbValue"] {{
+            background-color: #1a1a1a !important;
+            border: 1px solid #555 !important;
+        }}
 
-    [data-testid="stSidebar"] {{
-        background-color: #0a0a0a;
-        border-right: 1px solid #1a1a1a;
-    }}
+        /* ==================================================
+           2. 🙈 顶部清理 (你之前的要求)
+        ================================================== */
+        /* 顶部 Header 透明化，去除蓝色色块 */
+        header[data-testid="stHeader"] {{
+            background: transparent !important;
+            background-color: rgba(0,0,0,0) !important;
+            border: none !important;
+        }}
+        
+        /* 隐藏右上角工具栏 */
+        [data-testid="stToolbar"] {{
+            visibility: hidden !important;
+            display: none !important;
+        }}
+        
+        /* 隐藏装饰线 */
+        [data-testid="stDecoration"] {{
+            display: none !important;
+        }}
 
-    h1, h2, h3, p, span, label, div, button {{
-        font-family: 'Poppins','Noto Sans SC',sans-serif !important;
-        color: #d0d0d0;
-    }}
-
-    /* ===============================
-       3. 输入控件
-    =============================== */
-    .stTextArea textarea,
-    .stTextInput input {{
-        background-color: #111111 !important;
-        border: 1px solid #333333 !important;
-        color: #e0e0e0 !important;
-        border-radius: 4px !important;
-    }}
-
-    /* ===============================
-       4. 按钮
-    =============================== */
-    .stButton > button {{
-        border-radius: 4px !important;
-        border: 1px solid #444 !important;
-        background: linear-gradient(180deg,#3a3a3a 0%,#222222 100%) !important;
-        color: #ffffff !important;
-    }}
-
-   /* ===============================
-   🎚 Slider · 银色金属版
-=============================== */
-
-/* 底轨（未选中） */
-div[data-baseweb="slider"] > div {{
-    background-color: #2a2a2a !important;
-    height: 4px !important;
-    border-radius: 999px !important;
-}}
-
-/* 已选中轨道 */
-div[data-baseweb="slider"] div[aria-hidden="true"] {{
-    background: linear-gradient(
-        90deg,
-        #bfc3c7 0%,
-        #e6e8ea 50%,
-        #b3b7bb 100%
-    ) !important;
-    height: 4px !important;
-    border-radius: 999px !important;
-}}
-
-/* 滑块圆点 */
-div[data-baseweb="slider"] [role="slider"] {{
-    width: 14px !important;
-    height: 14px !important;
-    background: radial-gradient(
-        circle at 30% 30%,
-        #ffffff 0%,
-        #d9d9d9 40%,
-        #9a9a9a 100%
-    ) !important;
-    border: 1px solid #555 !important;
-    border-radius: 50% !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
-    transform: translateY(-5px);
-}}
-
-/* hover 微光（很克制） */
-div[data-baseweb="slider"] [role="slider"]:hover {{
-    box-shadow:
-        0 0 0 6px rgba(200,200,200,0.08),
-        0 1px 2px rgba(0,0,0,0.6) !important;
-}}
-
-/* 数值文字 */
-div[data-baseweb="slider"] output {{
-    color: #9a9a9a !important;
-    font-size: 12px;
-    font-weight: 500;
-}}
+        /* ==================================================
+           3. 🛠️ 基础修复 (图标与暗黑模式)
+        ================================================== */
+        .material-icons, .material-icons-outlined, .material-icons-two-tone, 
+        .material-icons-round, .material-icons-sharp {{
+            font-family: 'Material Icons' !important;
+        }}
+        
+        .stApp {{ background-color: #000000; }}
+        
+        [data-testid="stSidebar"] {{
+            background-color: #0a0a0a;
+            border-right: 1px solid #1a1a1a;
+        }}
+        
+        h1, h2, h3, p, span, label, div, button {{
+            font-family: 'Poppins', 'Noto Sans SC', sans-serif !important;
+            color: #d0d0d0;
+        }}
+        
+        .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] > div {{
+            background-color: #111111 !important;
+            border: 1px solid #333333 !important;
+            color: #e0e0e0 !important;
+            border-radius: 4px !important;
+        }}
+        
+        .stButton > button {{
+            border-radius: 4px !important;
+            border: 1px solid #444 !important;
+            background: linear-gradient(180deg, #3a3a3a 0%, #222222 100%) !important;
+            color: #ffffff !important;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
