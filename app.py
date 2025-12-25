@@ -73,9 +73,13 @@ if "input_text" not in st.session_state:
 left, center, right = st.columns([1.2, 4, 2])
 
 # ======================
-# 左下角：📊 库存状态栏（你要的）
+# 左下角：📊 库存状态栏（固定在底部）
 # ======================
 with left:
+    # ⬆️ 上方占位，把内容顶下去
+    st.markdown("<div style='height:65vh'></div>", unsafe_allow_html=True)
+
+    # ⬇️ 真正的库存状态
     st.markdown("### 📊 库存状态")
     for k, v in WAREHOUSE.items():
         st.caption(f"{k}: {len(get_data(v))}")
