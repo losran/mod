@@ -5,77 +5,79 @@ def apply_pro_style():
     st.markdown("""
     <style>
         /* =========================
-           全局基础
+           1. 全局暗黑基础
         ========================= */
-        .stApp { background-color: #0f1014; }
-        [data-testid="stHeader"] { background: transparent !important; }
-        [data-testid="stHeader"] > div:first-child { display: none !important; }
+        .stApp {
+            background-color: #0f1014;
+        }
+        
+        /* 隐藏 Header 和装饰条，让界面更像 App */
+        [data-testid="stHeader"] {
+            background: transparent !important;
+        }
+        [data-testid="stHeader"] > div:first-child {
+            display: none !important;
+        }
 
         /* =========================
-           右侧仓库（固定）
+           2. 侧边栏 (Sidebar) 美化
+           对应 Python 中的 with st.sidebar:
         ========================= */
-        #warehouse-panel {
-            position: fixed;
-            right: 0;
-            top: 0;
-            width: 300px;
-            height: 100vh;
-            background: #16171d;
-            border-left: 1px solid #262730;
-            padding: 24px 16px;
-            overflow-y: auto;
-            z-index: 50;
+        [data-testid="stSidebar"] {
+            background-color: #16171d;
+            border-right: 1px solid #262730;
+        }
+        
+        /* 调整侧边栏宽度，让它看起来不那么挤 */
+        [data-testid="stSidebar"] > div:first-child {
+            width: 300px; /* 如果觉得太宽可以改小，比如 260px */
         }
 
-
-        /* 📊 库存状态：强制左下角固定 */
-        #inventory-panel {
-            position: fixed;
-            left: 24px;
-            bottom: 24px;
-            width: 220px;
-            background: #16171d;
-            border: 1px solid #262730;
-            padding: 14px 16px;
-            border-radius: 6px;
-            z-index: 999;
+        /* =========================
+           3. 按钮与交互组件风格
+        ========================= */
+        /* 主按钮 (Primary) - 比如“确认入库” */
+        .stButton > button[kind="primary"] {
+            background-color: #2e6cff;
+            border: none;
+            color: white;
+            transition: all 0.2s;
+        }
+        .stButton > button[kind="primary"]:hover {
+            background-color: #4b82ff;
+            box-shadow: 0 4px 12px rgba(46, 108, 255, 0.3);
         }
 
-
-
-        #inventory-panel h4 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-        }
-
-        .inv-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
+        /* 次要按钮 (Secondary) - 比如“删除” */
+        .stButton > button[kind="secondary"] {
+            background-color: #1a1b23;
+            border: 1px solid #363740;
             color: #8b949e;
-            margin-bottom: 4px;
         }
-
-        /* =========================
-           中央内容防遮挡
-        ========================= */
-        .main-content {
-            margin-right: 320px;
-            padding-bottom: 120px;
+        .stButton > button[kind="secondary"]:hover {
+            border-color: #6e7681;
+            color: #e6edf3;
         }
-
-        /* =========================
-           标签按钮视觉
-        ========================= */
-        .tag-pill {
-            display: flex;
-            align-items: center;
-            background: #1a1b23;
+        
+        /* 输入框样式 */
+        .stTextArea textarea {
+            background-color: #16171d;
             border: 1px solid #262730;
-            border-radius: 6px;
-            padding: 6px 10px;
-            margin-bottom: 6px;
+            color: #e6edf3;
         }
-    </style>
-    """, unsafe_allow_html=True)
-    
+        .stTextArea textarea:focus {
+            border-color: #2e6cff;
+            box-shadow: none;
+        }
+
+        /* =========================
+           4. 视觉微调
+        ========================= */
+        /* 分割线颜色 */
+        hr {
+            border-color: #262730 !important;
+        }
+        
+        /* Metric 组件数值颜色 */
+        [data-testid="stMetricValue"] {
+            color: #e
