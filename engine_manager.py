@@ -88,7 +88,7 @@ def render_sidebar():
     with st.sidebar:
         st.header("Engine Console")
         st.markdown("---")
-        st.markdown("### 📊 Live Inventory")
+        st.markdown("### Live Inventory")
         
         if "db_all" in st.session_state:
             for k, v in st.session_state.db_all.items():
