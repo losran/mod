@@ -1,16 +1,16 @@
-# app.py
 import streamlit as st
 from openai import OpenAI
 
 # 1. 基础配置
 st.set_page_config(layout="wide", page_title="Creative Engine")
 
-# 2. 引入通用模块 (如果这一步报错，说明 engine_manager.py 没建对)
+# 2. 引入通用模块
+# ⚠️ 如果这里报错 ImportError，说明你还没创建 engine_manager.py 文件
 try:
     from engine_manager import render_sidebar, WAREHOUSE, save_data, init_data
     render_sidebar()
 except ImportError as e:
-    st.error(f"❌ 找不到 engine_manager.py，请检查文件名！错误: {e}")
+    st.error(f"❌ 严重错误: 找不到 engine_manager.py。请在项目根目录新建该文件！\n错误详情: {e}")
     st.stop()
 
 # 3. 初始化 OpenAI
@@ -28,7 +28,9 @@ if "input_text" not in st.session_state:
 # 5. 页面布局
 center, right = st.columns([4, 2])
 
-# --- 左侧：智能拆分 ---
+# ===========================
+# 左侧：智能拆分区域
+# ===========================
 with center:
     st.markdown("## ⚡ 智能入库")
     st.session_state.input_text = st.text_area(
@@ -61,8 +63,8 @@ with center:
                         if ":" in block:
                             cat, words = block.split(":", 1)
                             cat = cat.strip()
-                            # 模糊匹配分类
                             target_key = None
+                            # 模糊匹配分类 key
                             for k in WAREHOUSE:
                                 if k.lower() in cat.lower():
                                     target_key = k
@@ -77,6 +79,7 @@ with center:
                 except Exception as e:
                     st.error(f"AI 请求失败: {e}")
 
+    # 显示拆分结果
     if st.session_state.ai_results:
         st.markdown("### 🧠 拆分结果")
         selected = []
@@ -88,7 +91,7 @@ with center:
 
         if st.button("📥 确认入库", type="primary"):
             changed_cats = set()
-            # 确保 db_all 存在
+            # 确保数据已初始化
             if "db_all" not in st.session_state:
                 init_data()
                 
@@ -106,16 +109,17 @@ with center:
                 with st.spinner("正在同步到 GitHub..."):
                     for cat in changed_cats:
                         save_data(WAREHOUSE[cat], st.session_state.db_all[cat])
-                st.success(f"已更新: {', '.join(changed_cats)}")
+                st.success(f"已更新分类: {', '.join(changed_cats)}")
                 st.session_state.ai_results = []
                 st.rerun()
 
-# --- 右侧：仓库管理 ---
+# ===========================
+# 右侧：仓库管理区域
+# ===========================
 with right:
     st.markdown("## 📦 仓库")
     cat = st.selectbox("分类", list(WAREHOUSE.keys()))
     
-    # 确保数据存在
     if "db_all" not in st.session_state:
         init_data()
         
@@ -125,8 +129,8 @@ with right:
         if not words:
             st.caption("暂无数据")
         for w in words:
-            # 修复了之前的 SyntaxError
-            c1, c2 = st.columns([4, 1])
+            # ✅ 这里就是刚才报错的地方，已经修复：
+            c1, c2 = st.columns([4, 1]) 
             with c1:
                 if st.button(w, key=f"add_{w}", use_container_width=True):
                     st.session_state.input_text += f" {w}"
