@@ -67,7 +67,8 @@ def apply_pro_style():
             background-color: rgba(0,0,0,0) !important;
             border: none !important;
         }}
-        [data-testid="stToolbar"], [data-testid="stDecoration"] {{
+       
+        [data-testid="stDecoration"] {{
             display: none !important;
         }}
 
