@@ -10,77 +10,62 @@ def apply_pro_style():
         @import url('{icon_url}');
 
         /* ==================================================
-           🚑 1. 侧边栏按钮终极拯救 (悬浮固定)
-           (不管Header怎么变，强制把这个按钮钉在左上角)
+           🚑 1. 侧边栏按钮 - 原生风格修复
+           (不去改变它的位置和形状，只确保它变白、能点击)
         ================================================== */
         [data-testid="stSidebarCollapsedControl"] {{
-            display: flex !important;
-            visibility: visible !important;
-            z-index: 9999999 !important; /* 层级拉满 */
+            /* 1. 确保在最上层 */
+            z-index: 9999999 !important;
             
-            /* 强制固定在左上角 */
-            position: fixed !important;
-            top: 20px !important;
-            left: 20px !important;
-            
-            /* 样式美化：深灰色方块，确保能看见 */
-            background-color: #222 !important;
-            color: #fff !important;
-            border: 1px solid #555 !important;
-            border-radius: 8px !important;
-            width: 44px !important;
-            height: 44px !important;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5) !important;
-        }}
-        
-        /* 鼠标移上去变亮 */
-        [data-testid="stSidebarCollapsedControl"]:hover {{
-            background-color: #444 !important;
-            border-color: #fff !important;
-            transform: scale(1.05);
+            /* 2. 核心修复：允许鼠标点击 (破解 pointer-events: none) */
+            pointer-events: auto !important; 
             cursor: pointer !important;
+            
+            /* 3. 视觉修复：强制变白，背景透明 */
+            color: #ffffff !important;
+            background-color: transparent !important; /* 去掉灰色方块背景 */
+            border: none !important;                  /* 去掉边框 */
         }}
         
-        /* 确保里面的图标也是白的 */
-        [data-testid="stSidebarCollapsedControl"] * {{
+        /* 鼠标移上去稍微有点反应，但不突兀 */
+        [data-testid="stSidebarCollapsedControl"]:hover {{
+            color: #C0C0C0 !important; /* 微微变银色 */
+            background-color: rgba(255,255,255,0.1) !important; /* 极淡的背景 */
+        }}
+
+        /* 强制图标变白 */
+        [data-testid="stSidebarCollapsedControl"] svg, 
+        [data-testid="stSidebarCollapsedControl"] i {{
             color: #ffffff !important;
+            fill: #ffffff !important;
         }}
 
         /* ==================================================
-           2. 🙈 顶部清理 (Header)
+           2. Header 透明化
         ================================================== */
-        /* Header 透明，且不阻挡点击 */
         header[data-testid="stHeader"] {{ 
             background: transparent !important; 
             border: none !important;
-            pointer-events: none !important; /* 让鼠标穿透 Header */
+            /* 让鼠标穿透 Header 区域，这样不会挡住页面内容 */
+            pointer-events: none !important; 
         }}
-        
+
         /* 隐藏右上角菜单 */
         [data-testid="stToolbar"], [data-testid="stDecoration"] {{ 
             display: none !important; 
         }}
 
         /* ==================================================
-           3. ⚪ 银色滑块 & 按钮交互
+           3. 银色滑块 & 按钮样式 (保持不变)
         ================================================== */
         :root {{ --primary-color: #C0C0C0 !important; --text-color: #E0E0E0 !important; }}
-        
-        div[role="slider"] {{
-            background-color: #FFFFFF !important;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6) !important;
-            border: 1px solid #C0C0C0 !important;
-        }}
         
         /* 按钮 - 普通 */
         .stButton > button[kind="secondary"] {{
             border: 1px solid #333 !important; background: #111 !important; color: #888 !important;
         }}
-        .stButton > button[kind="secondary"]:hover {{ border-color: #666 !important; color: #ccc !important; }}
         
-        /* 按钮 - 高亮 (Primary) */
+        /* 按钮 - 高亮 */
         .stButton > button[kind="primary"] {{
             background: linear-gradient(135deg, #e0e0e0 0%, #ffffff 100%) !important;
             color: #000000 !important;
@@ -90,7 +75,7 @@ def apply_pro_style():
         }}
 
         /* ==================================================
-           4. 基础样式
+           4. 基础全局样式
         ================================================== */
         .stApp {{ background-color: #000000; }}
         [data-testid="stSidebar"] {{ 
