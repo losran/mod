@@ -1,4 +1,3 @@
-TEST_GITHUB_ONLY
 上臂、手腕
 前臂
 前臂内侧
@@ -9,6 +8,7 @@ TEST_GITHUB_ONLY
 小腿外侧
 小臂
 小面积皮肤
+屁股
 手腕
 手腕内侧
 手臂
@@ -24,4 +24,3 @@ TEST_GITHUB_ONLY
 身体
 锁骨
 颈间
-屁股
