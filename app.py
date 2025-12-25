@@ -2,6 +2,13 @@ import streamlit as st
 import requests, base64, time
 from openai import OpenAI
 from style_manager import apply_pro_style
+# 🔢 左下角库存状态（实时 GitHub）
+real_counts = {
+    k: len(get_data(v))
+    for k, v in FILES.items()
+}
+render_unified_sidebar(real_counts)
+
 
 # --- 1. 页面配置 ---
 st.set_page_config(layout="wide", page_title="Tattoo AI Workbench")
@@ -90,14 +97,34 @@ with col_main:
         if user_text:
             with st.spinner("解析中..."):
                 prompt = f"""
-Subject:主体词
-Action:动作词
-Style:风格词
-Mood:情绪词
-Usage:部位词
+你是一位【强迫症级别的关键词拆解师】。
+请将用户的描述【粉碎】为最细小的独立中文标签。
 
-原文：{user_text}
+【硬性规则】
+1. 每个标签必须是【单词级】，禁止长句
+2. 不得造词，只拆词
+3. 必须严格归类
+4. 纯中文输出
+
+【分类定义】
+Subject：主体、生物、物体、材质
+Action：动作、状态
+StyleSystem：艺术流派 / 体系（如 日式, 美式, 赛博）
+Technique：绘制 / 表现技法（如 线描, 黑线, 水彩）
+Color：颜色（如 黑色, 朱红）
+Texture：材质 / 肌理（如 金属, 粗糙）
+Composition：构图（如 对称, 居中）
+Accent：装饰点（如 火焰, 符号）
+Mood：情绪
+Usage：纹身部位
+
+【原文】
+{user_text}
+
+【输出格式】
+Subject:词1,词2|Action:词1|StyleSystem:词1|Technique:词1|Color:词1|Texture:词1|Composition:词1|Accent:词1|Mood:词1|Usage:词1
 """
+
                 res = client.chat.completions.create(
                     model="deepseek-chat",
                     messages=[{"role": "user", "content": prompt}],
