@@ -271,51 +271,44 @@ with col_main:
                 st.session_state.generated_cache = []; st.session_state.selected_prompts = []
                 st.rerun()
 
-# --- 🔵 精准加固后的润色逻辑 ---
+# ... (你的上文代码) ...
+    
+    # --- 🔵 精准加固后的润色逻辑 ---
     if st.session_state.selected_prompts and not st.session_state.polished_text:
         st.divider()
         if st.button("✨ 确认方案并开始润色", type="primary", use_container_width=True):
-            # 1. 强制归档：将生成的 cache 中未选中的方案移入 history_log
+            
+            # === 第一步：归档逻辑 (把没选中的扔进历史) ===
             try:
-                if 'generated_cache' in st.session_state and st.session_state.generated_cache:
-                    abandoned = [p for p in st.session_state.generated_cache if p not in st.session_state.selected_prompts]
-                    if abandoned:
-                        # 确保 history_log 是列表并追加
-                        if not isinstance(st.session_state.history_log, list):
-                            st.session_state.history_log = []
-                        st.session_state.history_log = abandoned + st.session_state.history_log
-                    
-                    # 清空当前展示，完成“迁移”视觉效果
-                    st.session_state.generated_cache = []
+                # 找出被遗弃的方案
+                abandoned = [p for p in st.session_state.generated_cache if p not in st.session_state.selected_prompts]
+                if abandoned:
+                    # 确保 history_log 是个列表，防止报错
+                    if not isinstance(st.session_state.history_log, list):
+                        st.session_state.history_log = []
+                    # 追加到历史
+                    st.session_state.history_log = abandoned + st.session_state.history_log
+                
+                # 清空生成的缓存，视觉上完成“迁移”
+                st.session_state.generated_cache = []
             except Exception as e:
-                st.error(f"归档过程出错: {e}")
+                # 归档出错不应该卡住主流程，只打印个警告
+                print(f"归档小故障: {e}")
 
-
-    # ✅ 注意：spinner 还在 if 里面
-    with st.spinner("AI 注入灵魂中..."):
-        try:
-            # 你的 AI 润色逻辑
-            ...
-        except Exception as e:
-            st.error(e)
-
-        
-        except Exception as e:
-            st.error(f"归档过程出错: {e}")         
-
-            # 2. 执行润色
+            # === 第二步：AI 润色逻辑 (核心功能) ===
             with st.spinner("AI 注入灵魂中..."):
                 try:
-                    # 构造纯净的输入文本
+                    # 1. 构造纯净的输入文本
                     input_text = "\n".join([f"方案{idx+1}: {p}" for idx, p in enumerate(st.session_state.selected_prompts)])
                     
-                    # 审美光谱映射
+                    # 2. 审美光谱映射 (保留你原来的逻辑)
                     if chaos_level <= 35: v, f, n = "可爱治愈", "软萌圆润", "陪伴"
                     elif chaos_level <= 75: v, f, n = "日式传统", "黑线重彩", "沉淀"
                     else: v, f, n = "欧美极简", "力量解构", "破局"
                     
                     sys_p = f"你是一位资深刺青策展人。风格基调：{v}。请将方案润色为极具艺术感的纹身描述,每一段文本必须出现纹身这两个字。请务必为每个润色后的方案加上标题，格式严格遵守：**方案[数字]：**，禁止省略星号和冒号。"
                     
+                    # 3. 调用 AI
                     response = client.chat.completions.create(
                         model="deepseek-chat",
                         messages=[
@@ -323,21 +316,23 @@ with col_main:
                             {"role": "user", "content": input_text}
                         ],
                         temperature=0.7,
-                        timeout=30 # 增加超时保护
+                        timeout=30 
                     )
                     
+                    # 4. 成功后保存结果
                     st.session_state.polished_text = response.choices[0].message.content
 
-                    # 🔥 清空生成态
-                    st.session_state.generated_cache = []
+                    # 5. 清空已选，准备展示结果
                     st.session_state.selected_prompts = []
                     
+                    # 6. 刷新页面
                     st.rerun()
 
                 except Exception as e:
                     st.error(f"润色失败原因: {e}")
-                    # 如果失败了，建议不要清空 generated_cache，让用户可以重试
+                    # 如果失败了，不要清空 generated_cache，方便用户重试
 
+    # ... (你的下文代码: if st.session_state.polished_text: ...) ...
     if st.session_state.polished_text:
         st.divider(); st.subheader("🎨 艺术润色成品")
         st.text_area("文案预览：", st.session_state.polished_text, height=400)
