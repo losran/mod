@@ -11,23 +11,26 @@ from engine_manager import render_sidebar, WAREHOUSE, save_data
 # ===========================
 st.set_page_config(layout="wide", page_title="Creative Engine")
 # --- ✂️ 从这里开始复制 ✂️ ---
-# 🔥 局部强制补丁：专门修复滑块看不见的问题
+# 🔥 局部强制补丁：修复滑块 + 隐藏顶部自带导航
 st.markdown("""
 <style>
-    /* 1. 轨道变深灰 (让背景显出来) */
+    /* 1. 隐藏左上角的默认导航 (app/creative/automation) */
+    [data-testid="stSidebarNav"] {
+        display: none !important;
+    }
+
+    /* 2. 修复滑块看不见的问题 (强制高亮) */
+    /* 滑块轨道背景 (深灰) */
     div[data-baseweb="slider"] div { background-color: #333 !important; }
-    
-    /* 2. 选中条变亮银色 */
+    /* 滑块选中条 (亮银色) */
     div[data-baseweb="slider"] div[class*="css"] { background-color: #e0e0e0 !important; }
-    
-    /* 3. 滑块圆点变纯白+发光 */
+    /* 滑块圆点 (纯白发光) */
     div[role="slider"] {
         background-color: #fff !important;
         box-shadow: 0 0 10px rgba(255, 255, 255, 0.8) !important;
         border: none !important;
     }
-    
-    /* 4. 数值框变黑底白字 */
+    /* 数值显示框 (黑底白字) */
     div[data-testid="stThumbValue"] {
         background-color: #000 !important;
         color: #fff !important;
