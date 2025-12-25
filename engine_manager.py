@@ -83,9 +83,14 @@ def render_sidebar():
     # ✨✨✨ 在这里加入 Logo 代码！ ✨✨✨
     # image 参数写你的文件路径
     # icon_image 参数是当侧边栏收起变窄时显示的小图标（可选，不写也行）
-    st.logo("image/logo.png", icon_image="image/logo.png")
+    #st.logo("image/logo.png", icon_image="image/logo.png")
     
     with st.sidebar:
+        try:
+            st.image("image/logo.png", use_container_width=True)
+        except:
+            # 如果图片读取失败，显示文字提示，方便排查
+            st.warning("⚠️ 找不到 image/logo.png")
         st.title("🚀 引擎控制台")
         st.markdown("---")
         st.markdown("### 📊 实时库存")
