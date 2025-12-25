@@ -27,20 +27,7 @@ def apply_pro_style():
             z-index: 50;
         }
 
-        /* =========================
-           左下角库存状态（固定）
-        ========================= */
-        #inventory-panel {
-            position: fixed;
-            left: 300px;   /* ← 这里！！ */
-            bottom: 20px;
-            width: 220px;
-            background: rgba(22,23,29,0.95);
-            border: 1px solid #262730;
-            border-radius: 12px;
-            padding: 14px;
-            z-index: 60;
-        }
+
         /* 📊 库存状态：强制左下角固定 */
         #inventory-panel {
             position: fixed;
