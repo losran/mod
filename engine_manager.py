@@ -69,51 +69,35 @@ def init_data():
 # ===========================
 # 3. Sidebar Render (English Version)
 # ===========================
-# 找到 def render_sidebar(): ... 这一整块，替换成下面这样：
-
 def render_sidebar():
-    # 引入样式
+    # Apply Styles
     try:
         from style_manager import apply_pro_style
         apply_pro_style()
     except ImportError:
         pass
 
-    # 隐藏 Streamlit 自带的导航
-    st.markdown("""
-        <style>
-            [data-testid="stSidebarNav"] { display: none !important; }
-        </style>
-    """, unsafe_allow_html=True)
-
     init_data()
     
-    with st.sidebar:
-        # 1. 顶部 Logo 区域
-        if os.path.exists("images/logo.png"):
-            st.image("images/logo.png", width=140)
-        else:
-            st.markdown("### ⚡ MOD ENGINE")
+    # Optional: Display Logo if you have one, else skip
+    try:
+        st.logo("images/logo.png", icon_image="images/logo.png")
+    except:
+        pass
 
+    with st.sidebar:
+        st.header("Engine Console")
         st.markdown("---")
-        
-        # 2. 🔥 核心菜单区域 (位置就在 Logo 下面)
-        st.markdown("#### 🧭 Navigation") # 加个小标题更好看
+        st.markdown("### Live Inventory")
+        # 👇👇👇 纯文字版菜单 (无图标) 👇👇👇
         st.page_link("app.py", label="Smart Ingest")
         st.page_link("pages/01_creative.py", label="Creative Engine")
         st.page_link("pages/02_automation.py", label="Automation")
-
-        st.markdown("---")
-
-        # 3. 下半部分：控制台和库存
-        st.header("Engine Console")
-        st.caption("Live Inventory Stats") # 加个副标题
-        
+        # 👆👆👆 结束 👆👆👆
         if "db_all" in st.session_state:
-            # 使用 expander 收纳库存，避免太长占位置
-            with st.expander("📦 Inventory Details", expanded=True):
-                for k, v in st.session_state.db_all.items():
-                    st.markdown(f"**{k}** : `{len(v)}`")
+            for k, v in st.session_state.db_all.items():
+                # Display category and count
+                st.markdown(f"**{k}** : `{len(v)}`")
         else:
             st.warning("Syncing...")
         
