@@ -15,7 +15,8 @@ except ImportError:
 # ==========================================
 # 1. 页面初始化
 # ==========================================
-st.set_page_config(layout="wide", page_title="Creative Engine")
+# 👇 加上 initial_sidebar_state="expanded"
+st.set_page_config(layout="wide", page_title="Creative Engine", initial_sidebar_state="expanded")
 apply_pro_style() 
 render_sidebar()
 init_data()
