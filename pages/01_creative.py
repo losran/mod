@@ -2,25 +2,26 @@ import streamlit as st
 import sys
 import os
 
-# 🔥 关键修复：把上级目录加入路径，这样才能找到 style_manager
+# 路径修复
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 try:
     from style_manager import apply_pro_style
-    # 假设 engine_manager 也在根目录
-    from engine_manager import init_data 
+    # 🔥 关键修改：引入 render_sidebar
+    from engine_manager import init_data, render_sidebar 
 except ImportError:
-    # 如果还是找不到，就在页面上打印提示，而不是直接崩掉
-    st.error("⚠️ 找不到 style_manager.py，请检查文件是否在根目录！")
+    st.error("⚠️ 找不到依赖文件，请检查目录结构！")
     def apply_pro_style(): pass
     def init_data(): pass
+    def render_sidebar(): pass
 
 # ==========================================
 # 1. 核心配置 & 样式
 # ==========================================
 st.set_page_config(layout="wide", page_title="Creative Engine")
-apply_pro_style() 
-init_data()
+
+apply_pro_style() # 应用样式
+render_sidebar()  # 👈👈👈 必须加这句！把侧边栏菜单画出来！
 
 # ==========================================
 # 2. 界面布局 (极简版)
