@@ -89,11 +89,7 @@ def render_sidebar():
         st.header("Engine Console")
         st.markdown("---")
         st.markdown("### Live Inventory")
-        # 👇👇👇 纯文字版菜单 (无图标) 👇👇👇
-        st.page_link("app.py", label="Smart Ingest")
-        st.page_link("pages/01_creative.py", label="Creative Engine")
-        st.page_link("pages/02_automation.py", label="Automation")
-        # 👆👆👆 结束 👆👆👆
+
         if "db_all" in st.session_state:
             for k, v in st.session_state.db_all.items():
                 # Display category and count
