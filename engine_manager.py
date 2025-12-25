@@ -4,11 +4,9 @@ import requests
 import base64
 
 # ===========================
-# 1. 基础配置
+# 1. Config
 # ===========================
-# 🚨 请确认你的 GitHub 仓库名！
-# 如果是 tattoo-ai-tool 请改为 "losran/tattoo-ai-tool"
-REPO = "losran/mod" 
+REPO = "losran/tattoo-ai-tool" # Make sure this is correct
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 
 WAREHOUSE = {
@@ -25,7 +23,7 @@ WAREHOUSE = {
 }
 
 # ===========================
-# 2. 核心函数
+# 2. Core Functions
 # ===========================
 @st.cache_data(ttl=600)
 def fetch_repo_data():
@@ -69,10 +67,10 @@ def init_data():
         st.session_state.db_all = fetch_repo_data()
 
 # ===========================
-# 3. 侧边栏渲染 (Render Sidebar)
+# 3. Sidebar Render (English Version)
 # ===========================
 def render_sidebar():
-    # 尝试应用样式
+    # Apply Styles
     try:
         from style_manager import apply_pro_style
         apply_pro_style()
@@ -80,25 +78,27 @@ def render_sidebar():
         pass
 
     init_data()
-    # ✨✨✨ 在这里加入 Logo 代码！ ✨✨✨
-    # image 参数写你的文件路径
-    # icon_image 参数是当侧边栏收起变窄时显示的小图标（可选，不写也行）
-    st.logo("image/logo.png", icon_image="image/logo.png")
     
+    # Optional: Display Logo if you have one, else skip
+    try:
+        st.logo("images/logo.png", icon_image="images/logo.png")
+    except:
+        pass
+
     with st.sidebar:
-       
-        st.title("🚀 引擎控制台")
+        st.header("Engine Console")
         st.markdown("---")
-        st.markdown("### 📊 实时库存")
+        st.markdown("### 📊 Live Inventory")
         
         if "db_all" in st.session_state:
             for k, v in st.session_state.db_all.items():
+                # Display category and count
                 st.markdown(f"**{k}** : `{len(v)}`")
         else:
-            st.warning("数据同步中...")
+            st.warning("Syncing...")
         
         st.markdown("---")
-        if st.button("🔄 全局刷新", use_container_width=True):
+        if st.button("Refresh All", use_container_width=True):
             st.cache_data.clear()
             st.session_state.db_all = fetch_repo_data()
             st.rerun()
