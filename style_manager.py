@@ -58,32 +58,55 @@ def apply_pro_style():
         color: #ffffff !important;
     }}
 
-    /* =====================================================
-       5. 🔥 Slider 专项优化（只改滑块，结构安全）
-    ===================================================== */
+   /* ===============================
+   🎚 Slider · 银色金属版
+=============================== */
 
-    /* 未选中轨道 */
-    div[data-baseweb="slider"] > div {{
-        background-color: #2a2a2a !important;
-    }}
+/* 底轨（未选中） */
+div[data-baseweb="slider"] > div {{
+    background-color: #2a2a2a !important;
+    height: 4px !important;
+    border-radius: 999px !important;
+}}
 
-    /* 已选中轨道 */
-    div[data-baseweb="slider"] div[aria-hidden="true"] {{
-        background-color: #ff4b4b !important;
-    }}
+/* 已选中轨道 */
+div[data-baseweb="slider"] div[aria-hidden="true"] {{
+    background: linear-gradient(
+        90deg,
+        #bfc3c7 0%,
+        #e6e8ea 50%,
+        #b3b7bb 100%
+    ) !important;
+    height: 4px !important;
+    border-radius: 999px !important;
+}}
 
-    /* 滑块圆点 */
-    div[data-baseweb="slider"] [role="slider"] {{
-        background-color: #ff4b4b !important;
-        border: 2px solid #000000 !important;
-        box-shadow: 0 0 6px rgba(255,75,75,0.6);
-    }}
+/* 滑块圆点 */
+div[data-baseweb="slider"] [role="slider"] {{
+    width: 14px !important;
+    height: 14px !important;
+    background: radial-gradient(
+        circle at 30% 30%,
+        #ffffff 0%,
+        #d9d9d9 40%,
+        #9a9a9a 100%
+    ) !important;
+    border: 1px solid #555 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+    transform: translateY(-5px);
+}}
 
-    /* 数值显示 */
-    div[data-baseweb="slider"] output {{
-        color: #ff4b4b !important;
-        font-weight: 600;
-    }}
+/* hover 微光（很克制） */
+div[data-baseweb="slider"] [role="slider"]:hover {{
+    box-shadow:
+        0 0 0 6px rgba(200,200,200,0.08),
+        0 1px 2px rgba(0,0,0,0.6) !important;
+}}
 
-    </style>
-    """, unsafe_allow_html=True)
+/* 数值文字 */
+div[data-baseweb="slider"] output {{
+    color: #9a9a9a !important;
+    font-size: 12px;
+    font-weight: 500;
+}}
