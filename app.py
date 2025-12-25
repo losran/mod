@@ -179,15 +179,18 @@ with right:
         
     words = st.session_state.db_all.get(cat, [])
 
+    # 使用容器包裹，高度固定，并配合 CSS 保持内部整洁
     with st.container(height=500):
         if not words:
             st.caption("No Data")
         for w in words:
-            c1, c2 = st.columns([4, 1]) 
+            # --- 核心修改：增加 vertical_alignment="center" 确保 ✕ 和文字水平对齐 ---
+            c1, c2 = st.columns([4, 1], vertical_alignment="center") 
             with c1:
                 if st.button(w, key=f"add_{w}", use_container_width=True):
                     st.session_state.input_text += f" {w}"
             with c2:
+                # 这里的 ✕ 按钮在 style_manager 里会被美化
                 if st.button("✕", key=f"del_{cat}_{w}"):
                     new_list = [i for i in words if i != w]
                     st.session_state.db_all[cat] = new_list
