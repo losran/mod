@@ -10,79 +10,87 @@ def apply_pro_style():
         @import url('{icon_url}');
 
         /* ==================================================
-           🚑 1. 侧边栏按钮 - 原生风格修复
-           (不去改变它的位置和形状，只确保它变白、能点击)
+           🚑 1. 侧边栏“越狱”按钮 (The Jailbreak Arrow)
+           我们不信任 Streamlit 的默认位置，直接强制固定。
         ================================================== */
+        
+        /* 针对最外层容器 */
         [data-testid="stSidebarCollapsedControl"] {{
-            /* 1. 确保在最上层 */
-            z-index: 9999999 !important;
-            
-            /* 2. 核心修复：允许鼠标点击 (破解 pointer-events: none) */
-            pointer-events: auto !important; 
-            cursor: pointer !important;
-            
-            /* 3. 视觉修复：强制变白，背景透明 */
+            position: fixed !important;
+            top: 12px !important;
+            left: 12px !important;
+            z-index: 1000002 !important; /* 比 Header 高 */
+            display: block !important;
+            pointer-events: auto !important; /* 强制允许点击 */
+            transition: all 0.3s ease;
+        }}
+
+        /* 针对里面的 Button 元素 (关键！有时候点不到是因为没覆盖这个) */
+        [data-testid="stSidebarCollapsedControl"] button {{
+            pointer-events: auto !important;
+            background-color: rgba(20, 20, 20, 0.8) !important; /* 深色圆底，防隐形 */
             color: #ffffff !important;
-            background-color: transparent !important; /* 去掉灰色方块背景 */
-            border: none !important;                  /* 去掉边框 */
+            border: 1px solid #444 !important;
+            border-radius: 50% !important; /* 圆形 */
+            width: 36px !important;
+            height: 36px !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5) !important;
         }}
         
-        /* 鼠标移上去稍微有点反应，但不突兀 */
-        [data-testid="stSidebarCollapsedControl"]:hover {{
-            color: #C0C0C0 !important; /* 微微变银色 */
-            background-color: rgba(255,255,255,0.1) !important; /* 极淡的背景 */
+        /* 鼠标移上去 */
+        [data-testid="stSidebarCollapsedControl"] button:hover {{
+            background-color: #ffffff !important; /* 变白 */
+            color: #000000 !important;          /* 黑箭头 */
+            transform: scale(1.1);
         }}
 
-        /* 强制图标变白 */
+        /* 强制箭头图标本身变色 */
         [data-testid="stSidebarCollapsedControl"] svg, 
         [data-testid="stSidebarCollapsedControl"] i {{
-            color: #ffffff !important;
-            fill: #ffffff !important;
+            color: inherit !important;
         }}
 
         /* ==================================================
-           2. Header 透明化
+           2. Header 透明化 (隐形力场消除)
         ================================================== */
-        header[data-testid="stHeader"] {{ 
-            background: transparent !important; 
-            border: none !important;
-            /* 让鼠标穿透 Header 区域，这样不会挡住页面内容 */
-            pointer-events: none !important; 
+        header[data-testid="stHeader"] {{
+            background: transparent !important;
+            border-bottom: none !important;
+            height: auto !important; /* 防止它占据过多高度 */
+            pointer-events: none !important; /* 让鼠标彻底穿透 Header */
+        }}
+        
+        /* 这里的 trick 是：让 Header 穿透，但让 Header 里的某些子元素恢复点击 */
+        header[data-testid="stHeader"] > div:first-child {{
+            pointer-events: none !important;
         }}
 
-        /* 隐藏右上角菜单 */
-        [data-testid="stToolbar"], [data-testid="stDecoration"] {{ 
-            display: none !important; 
+        /* 隐藏右上角工具栏 */
+        [data-testid="stToolbar"], [data-testid="stDecoration"] {{
+            display: none !important;
         }}
 
         /* ==================================================
-           3. 银色滑块 & 按钮样式 (保持不变)
+           3. 基础样式 (银色主题)
         ================================================== */
         :root {{ --primary-color: #C0C0C0 !important; --text-color: #E0E0E0 !important; }}
         
-        /* 按钮 - 普通 */
-        .stButton > button[kind="secondary"] {{
-            border: 1px solid #333 !important; background: #111 !important; color: #888 !important;
-        }}
+        .stApp {{ background-color: #000000; }}
+        [data-testid="stSidebar"] {{ background-color: #0a0a0a; border-right: 1px solid #1a1a1a; }}
         
-        /* 按钮 - 高亮 */
+        /* 按钮和输入框样式 */
         .stButton > button[kind="primary"] {{
             background: linear-gradient(135deg, #e0e0e0 0%, #ffffff 100%) !important;
             color: #000000 !important;
-            border: 1px solid #FFFFFF !important;
-            box-shadow: 0 0 12px rgba(255, 255, 255, 0.4) !important;
             font-weight: 700 !important;
         }}
-
-        /* ==================================================
-           4. 基础全局样式
-        ================================================== */
-        .stApp {{ background-color: #000000; }}
-        [data-testid="stSidebar"] {{ 
-            background-color: #0a0a0a; 
-            border-right: 1px solid #1a1a1a; 
+        .stButton > button[kind="secondary"] {{
+            background: #111 !important; color: #888 !important; border: 1px solid #333 !important;
         }}
-        h1, h2, h3, p, span, label, div {{ font-family: 'Poppins', 'Noto Sans SC', sans-serif !important; color: #d0d0d0; }}
+        
+        div[role="slider"] {{ background-color: #FFF !important; border: 1px solid #C0C0C0 !important; }}
+        h1, h2, h3, p, span, div {{ font-family: 'Poppins', sans-serif !important; color: #d0d0d0; }}
+        
         .material-icons {{ font-family: 'Material Icons' !important; }}
     </style>
     """, unsafe_allow_html=True)
