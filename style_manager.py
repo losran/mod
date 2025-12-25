@@ -105,9 +105,13 @@ def apply_pro_style():
             border-color: #888 !important;
             box-shadow: 0 0 5px rgba(255,255,255,0.2) !important;
         }}
-             /* ===== 1. 彻底隐藏 Streamlit 自带侧边栏按钮 ===== */
-        [data-testid="stToolbar"] {{
-            display: none !important;
+                /* ===== 立刻恢复官方 sidebar 箭头按钮 ===== */
+        [data-testid="stToolbar"] button {{
+            display: inline-flex !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            width: auto !important;
+            height: auto !important;
         }}
     </style>
     """, unsafe_allow_html=True)
