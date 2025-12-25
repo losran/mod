@@ -135,7 +135,8 @@ def save_to_github(path, data_list):
 
 # --- 3. UI 布局与 Session 初始化 ---
 st.set_page_config(layout="wide", page_title="Creative Engine")
-
+if 'history_log' not in st.session_state:
+    st.session_state.history_log = []  # <--- 专门加上这一行
 for key in ['selected_prompts', 'generated_cache', 'polished_text', 'manual_editor']:
     if key not in st.session_state:
         st.session_state[key] = "" if 'editor' in key or 'text' in key else []
