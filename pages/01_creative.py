@@ -145,8 +145,10 @@ user_input = st.text_area(
 # --- 操作区 ---
 col_num, col_btn, col_blank = st.columns([1, 2, 3])
 
+
 with col_num:
-    qty = st.number_input("Batch Size", min_value=1, max_value=8, value=4)
+    # 加上 label_visibility="collapsed"，标题就彻底不占位了
+    qty = st.number_input("Batch Size", min_value=1, max_value=8, value=4, label_visibility="collapsed")
 
 with col_btn:
     st.write("") # Layout spacer
