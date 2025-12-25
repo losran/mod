@@ -7,26 +7,21 @@ def apply_pro_style():
     <style>
         @import url('{font_url}');
 
-        /* 1. 字体与背景 */
+        /* 1. 基础全局样式 */
         html, body, [class*="css"], font, span, div, h1, h2, h3, h4, h5, h6, p, a, button, input, textarea, label {{
             font-family: 'Poppins', 'Noto Sans SC', sans-serif !important;
             color: #d0d0d0;
         }}
         .stApp {{ background-color: #000000; }}
 
-        /* 2. 侧边栏与导航栏纯净化 */
+        /* 2. 侧边栏与头部纯净化 */
         [data-testid="stSidebar"] {{ background-color: #0a0a0a !important; border-right: 1px solid #1a1a1a !important; z-index: 99998 !important; }}
         [data-testid="stSidebarUserContent"] {{ padding-top: 3.5rem !important; }}
         [data-testid="stToolbarActions"], [data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
-        header[data-testid="stHeader"] {{ background-color: rgba(0,0,0,0.6) !important; border-bottom: 1px solid #1a1a1a !important; height: 3.5rem !important; }}
+        header[data-testid="stHeader"] {{ background-color: rgba(0,0,0,0.8) !important; border-bottom: 1px solid #1a1a1a !important; height: 3.5rem !important; }}
 
-        /* 3. 核弹级清除：抹除顶部收起按钮内的 ghost 文字 */
-        [data-testid="stHeader"] button[data-testid*="Sidebar"] * {{
-            display: none !important;
-            font-size: 0 !important;
-        }}
-
-        /* 4. 重新绘制左上角箭头 (纯 CSS) */
+        /* 3. 清除顶部幽灵文字并重绘箭头 */
+        [data-testid="stHeader"] button[data-testid*="Sidebar"] * {{ display: none !important; }}
         [data-testid="stHeader"] button[data-testid*="Sidebar"] {{
             border: 1px solid #333 !important;
             background-color: #111 !important;
@@ -38,53 +33,65 @@ def apply_pro_style():
             content: "" !important;
             display: block !important;
             position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            width: 8px !important;
-            height: 8px !important;
+            top: 50% !important; left: 50% !important;
+            width: 8px !important; height: 8px !important;
             border-top: 2px solid #888 !important;
             border-right: 2px solid #888 !important;
         }}
-        /* 右箭头 (收起时) */
         [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"]::after {{ transform: translate(-65%, -50%) rotate(45deg) !important; }}
-        /* 左箭头 (展开时) */
         [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"]::after {{ transform: translate(-35%, -50%) rotate(-135deg) !important; }}
 
-        /* =======================================================
-           5. 终极对齐锁死 (输入框 + 按钮)
-           ======================================================= */
-        
-        /* 强制底边对齐 */
+        /* 4. 核心对齐锁死 (42px 绝对对齐) */
         [data-testid="column"] {{
             display: flex !important;
             align-items: flex-end !important;
         }}
-
-        /* 统一高度：把数字框和按钮强行锁死在 42px */
         div[data-testid="stNumberInput"] div[data-baseweb="input"],
         div[data-testid="stButton"] button {{
             height: 42px !important;
             min-height: 42px !important;
             box-sizing: border-box !important;
         }}
+        div[data-testid="stNumberInput"] label {{ display: none !important; }}
+        div[data-testid="stNumberInput"] input {{ height: 42px !important; }}
+        div[data-testid="stButton"] button p {{ line-height: 42px !important; margin: 0 !important; }}
 
-        /* 彻底干掉数字框的标题占位 */
-        div[data-testid="stNumberInput"] label {{
-            display: none !important;
-            height: 0 !important;
-            margin: 0 !important;
+        /* =======================================================
+           5. 响应式适配：解决平板与手机的重叠与换行
+           ======================================================= */
+        
+        /* 平板端适配 (屏幕宽度小于 1024px) */
+        @media (max-width: 1024px) {{
+            /* 解决重叠：允许列自动换行，不再硬挤 */
+            [data-testid="stHorizontalBlock"] {{
+                flex-wrap: wrap !important;
+                gap: 10px !important;
+            }}
+            /* 调节列宽度，防止按钮文字被挤爆 */
+            [data-testid="column"] {{
+                flex: 1 1 auto !important;
+                min-width: 120px !important;
+            }}
+            div[data-testid="stButton"] button p {{
+                font-size: 13px !important;
+                white-space: nowrap !important;
+            }}
         }}
 
-        /* 输入框内部文字垂直居中 */
-        div[data-testid="stNumberInput"] input {{
-            height: 42px !important;
-            padding: 0 10px !important;
-        }}
-
-        /* 按钮内部文字垂直居中 */
-        div[data-testid="stButton"] button p {{
-            line-height: 42px !important;
-            margin: 0 !important;
+        /* 手机端适配 (屏幕宽度小于 768px) */
+        @media (max-width: 768px) {{
+            /* 强制变成上下排列，解决一切水平对不齐的问题 */
+            [data-testid="stHorizontalBlock"] {{
+                flex-direction: column !important;
+            }}
+            [data-testid="column"], div[data-testid="stNumberInput"], div[data-testid="stButton"] {{
+                width: 100% !important;
+                max-width: 100% !important;
+            }}
+            /* 手机端按钮加一点间距 */
+            div[data-testid="stButton"] {{
+                margin-top: 5px !important;
+            }}
         }}
 
         /* 基础组件配色 */
