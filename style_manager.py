@@ -10,34 +10,29 @@ def apply_pro_style():
         @import url('{icon_url}');
 
         /* ==================================================
-           🚑 1. 侧边栏“救命”按钮 (悬浮固定)
+           🚑 1. 侧边栏按钮终极拯救 (悬浮固定)
            (不管Header怎么变，强制把这个按钮钉在左上角)
         ================================================== */
-        section[data-testid="stSidebar"] > div > div:first-child {{
-            /* 这是侧边栏内部的容器，防止它错位 */
-        }}
-
-        /* 针对收起后的“>”按钮 */
         [data-testid="stSidebarCollapsedControl"] {{
             display: flex !important;
             visibility: visible !important;
-            z-index: 9999999 !important; /* 层级拉满，谁也挡不住 */
+            z-index: 9999999 !important; /* 层级拉满 */
             
             /* 强制固定在左上角 */
             position: fixed !important;
             top: 20px !important;
             left: 20px !important;
             
-            /* 样式美化：让它显眼一点 */
-            background-color: #222 !important; /* 深灰底 */
-            color: #fff !important;            /* 白箭头 */
-            border: 1px solid #555 !important; /* 灰色边框 */
+            /* 样式美化：深灰色方块，确保能看见 */
+            background-color: #222 !important;
+            color: #fff !important;
+            border: 1px solid #555 !important;
             border-radius: 8px !important;
-            width: 40px !important;
-            height: 40px !important;
+            width: 44px !important;
+            height: 44px !important;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5) !important;
         }}
         
         /* 鼠标移上去变亮 */
@@ -45,6 +40,7 @@ def apply_pro_style():
             background-color: #444 !important;
             border-color: #fff !important;
             transform: scale(1.05);
+            cursor: pointer !important;
         }}
         
         /* 确保里面的图标也是白的 */
@@ -59,15 +55,10 @@ def apply_pro_style():
         header[data-testid="stHeader"] {{ 
             background: transparent !important; 
             border: none !important;
-            pointer-events: none !important; /* 关键：让鼠标穿透 Header */
+            pointer-events: none !important; /* 让鼠标穿透 Header */
         }}
         
-        /* 但 Header 里的子元素（如果需要点击）要恢复响应 */
-        header[data-testid="stHeader"] > div {{
-            pointer-events: auto !important;
-        }}
-
-        /* 隐藏右上角菜单 (Deploy, ... 等) */
+        /* 隐藏右上角菜单 */
         [data-testid="stToolbar"], [data-testid="stDecoration"] {{ 
             display: none !important; 
         }}
@@ -77,7 +68,6 @@ def apply_pro_style():
         ================================================== */
         :root {{ --primary-color: #C0C0C0 !important; --text-color: #E0E0E0 !important; }}
         
-        /* 滑块 */
         div[role="slider"] {{
             background-color: #FFFFFF !important;
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.6) !important;
@@ -107,4 +97,7 @@ def apply_pro_style():
             background-color: #0a0a0a; 
             border-right: 1px solid #1a1a1a; 
         }}
-        h1, h2, h3, p, span, label, div {{ font-
+        h1, h2, h3, p, span, label, div {{ font-family: 'Poppins', 'Noto Sans SC', sans-serif !important; color: #d0d0d0; }}
+        .material-icons {{ font-family: 'Material Icons' !important; }}
+    </style>
+    """, unsafe_allow_html=True)
