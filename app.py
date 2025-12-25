@@ -2,6 +2,14 @@ import streamlit as st
 import json
 from openai import OpenAI
 from engine_manager import render_sidebar, WAREHOUSE, save_data, init_data
+
+
+
+# ===========================
+# Configuration
+# ===========================
+st.set_page_config(layout="wide", page_title="Creative Engine")
+
 st.markdown("""
 <script>
 (function () {
@@ -15,13 +23,8 @@ st.markdown("""
 })();
 </script>
 """, unsafe_allow_html=True)
+
 from style_manager import apply_pro_style
-
-# ===========================
-# Configuration
-# ===========================
-st.set_page_config(layout="wide", page_title="Creative Engine")
-
 # Apply Styles & Sidebar
 apply_pro_style()
 render_sidebar()
