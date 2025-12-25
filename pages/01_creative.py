@@ -23,7 +23,7 @@ except ImportError:
 # ==========================================
 st.set_page_config(layout="wide", page_title="Creative Engine", initial_sidebar_state="collapsed")
 
-# 加载样式 & 数据 (保留你原版的数据同步逻辑)
+# 加载样式 & 数据
 apply_pro_style()
 render_sidebar()
 init_data()
@@ -32,20 +32,18 @@ init_data()
 try:
     client = OpenAI(api_key=st.secrets["DEEPSEEK_KEY"], base_url="https://api.deepseek.com")
 except Exception:
-    st.warning("请检查 .streamlit/secrets.toml 中的 DEEPSEEK_KEY")
+    st.warning("⚠️ 请配置 DEEPSEEK_KEY")
 
-# 初始化状态容器
+# 初始化状态
 if "final_solutions" not in st.session_state:
     st.session_state.final_solutions = []
 
 # ==========================================
-# 2. 核心引擎 (100% 还原原版配方)
+# 2. 核心引擎 (100% 还原原版精密组装)
 # ==========================================
 
 def smart_pick_ingredient(category):
-    """
-    模拟原版的高混沌模式：从指定仓库分类中抽取灵感
-    """
+    """模拟原版的高混沌模式：从指定仓库分类中抽取灵感"""
     db = st.session_state.get("db_all", {})
     if category in db and db[category]:
         return random.choice(db[category])
@@ -54,10 +52,9 @@ def smart_pick_ingredient(category):
 def assemble_core_logic(user_intent):
     """
     【核心逻辑堡垒】
-    这里严格复刻了你原代码的组装顺序。
     Sequence: Intent -> Subject -> Style -> Tech -> Color -> Texture -> Comp -> Action -> Mood -> (Accent) -> Usage
     """
-    # 1. 备料：从仓库抓取所有维度的配料
+    # 1. 备料
     sub     = smart_pick_ingredient("Subject")
     s_sys   = smart_pick_ingredient("StyleSystem")
     s_tech  = smart_pick_ingredient("Technique")
@@ -68,29 +65,26 @@ def assemble_core_logic(user_intent):
     mood    = smart_pick_ingredient("Mood")
     usage   = smart_pick_ingredient("Usage")
     
-    # 2. 组装：还原原版列表结构
+    # 2. 组装
     parts = [
-        user_intent.strip(), # 用户意图
-        sub,                 # 随机主体 (作为补充)
-        s_sys,               # 风格系统
-        s_tech,              # 技法
-        s_col,               # 颜色
-        s_tex,               # 质感
-        s_comp,              # 构图
-        act,                 # 动态
-        mood                 # 情绪
+        user_intent.strip(), 
+        sub,                 
+        s_sys,               
+        s_tech,              
+        s_col,               
+        s_tex,               
+        s_comp,              
+        act,                 
+        mood                 
     ]
 
-    # 3. 混沌点缀：还原原版 chaos > 60 的逻辑 (40%概率触发)
+    # 3. 混沌点缀 (40%概率)
     if random.random() > 0.4:
         s_acc = smart_pick_ingredient("Accent")
         if s_acc: parts.append(s_acc)
 
-    # 4. 生成生肉 (Raw Prompt)
-    # 过滤空值并用逗号连接
+    # 4. 生成生肉
     raw_chain = "，".join([p for p in parts if p])
-    
-    # 还原 "纹在..." 逻辑
     if usage:
         raw_chain += f"，纹在{usage}"
         
@@ -105,18 +99,18 @@ def run_creative_pipeline(start_intent, count):
     for i in range(count):
         current_idx = i + 1
         
-        # --- Step A: 组装骨架 (调用上方核心逻辑) ---
+        # --- Step A: 组装骨架 ---
         raw_bone = assemble_core_logic(start_intent)
         
-        # --- Step B: AI 润色 (严格 Prompt) ---
+        # --- Step B: AI 润色 (严格 Prompt 适配 automation 正则) ---
         sys_prompt = "你是一位资深刺青策展人。请将提供的关键词组合润色为极具艺术感的纹身描述。每段必须出现'纹身'二字。"
         user_prompt = f"""
         【原始骨架】：{raw_bone}
         
         【指令】：
-        1. 必须严格保留骨架中的风格、颜色、部位等关键信息，不可随意丢弃。
-        2. 必须严格以 "**方案{current_idx}：**" 开头 (注意是双星号)。
-        3. 输出一段 50-80 字的完整视觉描述，语言要简练、高级。
+        1. 必须严格保留骨架中的风格、颜色、部位等关键信息。
+        2. 必须严格以 "**方案{current_idx}：**" 开头 (双星号+冒号)。这是自动化识别的锚点。
+        3. 输出一段 50-80 字的完整视觉描述。
         """
 
         try:
@@ -126,7 +120,7 @@ def run_creative_pipeline(start_intent, count):
                     {"role": "system", "content": sys_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                temperature=0.85 # 保持高创造力
+                temperature=0.85 
             )
             results.append(response.choices[0].message.content)
         except Exception as e:
@@ -138,7 +132,7 @@ def run_creative_pipeline(start_intent, count):
 # 3. 极简 UI 交互层
 # ==========================================
 st.markdown("## 🧠 Creative Engine")
-st.caption("Auto-Assembly (Original Logic) -> AI Polish -> Automation Pipeline")
+st.caption("Auto-Assembly -> AI Polish -> Batch Handoff")
 st.markdown("---")
 
 # --- 输入区 ---
@@ -157,7 +151,6 @@ with col_num:
 with col_btn:
     st.write("") # Layout spacer
     
-    # 智能判断按钮文案
     is_blind_mode = not user_input.strip()
     btn_text = "✨ Generate (Blind Box)" if is_blind_mode else "✨ Generate Concepts"
     
@@ -166,44 +159,43 @@ with col_btn:
         # 确定起始意图
         final_intent = user_input.strip()
         if is_blind_mode:
-            # 盲盒模式：从 Subject 库抽一个作为核心
             final_intent = smart_pick_ingredient("Subject") or "神秘图腾"
             st.toast(f"🎲 盲盒已开启！核心主体：{final_intent}", icon="🎁")
         
-        with st.spinner(f"正在组装方案 (Core Logic: {final_intent} + Style + Tech + Color...)..."):
+        with st.spinner(f"正在组装 {qty} 组方案 (Core Logic Running)..."):
             st.session_state.final_solutions = run_creative_pipeline(final_intent, qty)
             st.rerun()
 
 # ==========================================
-# 4. 结果交付区 (产线对接)
+# 4. 结果交付区 (一键投递到 Automation)
 # ==========================================
 if st.session_state.final_solutions:
     st.markdown("---")
     st.subheader("💎 Polished Concepts")
     
-    # 遍历显示结果
-    for idx, solution in enumerate(st.session_state.final_solutions):
+    # 显示所有方案
+    for sol in st.session_state.final_solutions:
         with st.container(border=True):
-            # 渲染文案 (保持 Markdown 格式)
-            st.markdown(solution)
-            
-            # 对接自动化队列
-            if st.button("🚀 Automate", key=f"auto_btn_{idx}"):
-                task = {
-                    "prompt": solution,       # 包含 **方案N：** 的完整文本
-                    "count": 1,               # 单次执行
-                    "status": "pending",
-                    "source": "Creative_Engine_Optimized"
-                }
-                
-                # 写入队列
-                if "automation_queue" not in st.session_state:
-                    st.session_state.automation_queue = []
-                st.session_state.automation_queue.append(task)
-                
-                st.toast("已加入自动化产线队列", icon="✅")
+            st.markdown(sol) # 包含 "**方案N：**"
 
-    # 一键清空
-    if st.button("Clear All", use_container_width=True):
-        st.session_state.final_solutions = []
-        st.rerun()
+    st.markdown("---")
+    c_send, c_clear = st.columns([3, 1])
+    
+    # --- 核心修改：批量投递按钮 ---
+    with c_send:
+        if st.button("🚀 Send ALL to Automation", type="primary", use_container_width=True):
+            # 1. 将列表合并成一个长字符串，用换行符分隔
+            # 02_automation.py 会通过正则 "**方案N：" 自动识别分割
+            combined_text = "\n\n".join(st.session_state.final_solutions)
+            
+            # 2. 存入 session_state (适配 02 页面的读取逻辑)
+            st.session_state.polished_text = combined_text
+            st.session_state.auto_input_cache = combined_text # 双重保险
+            
+            # 3. 跳转页面
+            st.switch_page("pages/02_automation.py")
+            
+    with c_clear:
+        if st.button("Clear All", use_container_width=True):
+            st.session_state.final_solutions = []
+            st.rerun()
