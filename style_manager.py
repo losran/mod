@@ -98,19 +98,52 @@ def apply_pro_style():
         /* ==============================
            4. 布局与背景 (Header, Sidebar, App)
            ============================== */
-        /* Header 透明化 */
+        /* 1. 给按钮加个固定的“家”，防止它隐身 */
+        [data-testid="stHeader"] button {{
+            border: 1px solid #333 !important;  /* 加上深灰色边框 */
+            background-color: #111 !important;  /* 加上深色背景 */
+            border-radius: 4px !important;
+            width: 36px !important;             /* 强制固定大小 */
+            height: 36px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            opacity: 1 !important;              /* 强制不透明 */
+            z-index: 99999 !important;
+            transition: all 0.2s ease !important;
+        }}
+
+        /* 2. 彻底隐藏原本那个会乱码的图标 */
+        [data-testid="stHeader"] button span,
+        [data-testid="stHeader"] button svg {{
+            display: none !important;
+        }}
+
+        /* 3. 手动画一个新的“三道杠”菜单图标 (最稳定) */
+        [data-testid="stHeader"] button::after {{
+            content: "☰";                       /* 系统自带符号，绝对不乱码 */
+            font-size: 18px !important;
+            color: #888 !important;             /* 默认灰色 */
+            font-family: sans-serif !important;
+            line-height: 1 !important;
+            visibility: visible !important;
+        }}
+
+        /* 4. 鼠标移上去变亮，给你反馈 */
+        [data-testid="stHeader"] button:hover {{
+            border-color: #fff !important;      /* 边框变白 */
+            background-color: #222 !important;  /* 背景稍微变亮 */
+        }}
+        [data-testid="stHeader"] button:hover::after {{
+            color: #fff !important;             /* 图标变白 */
+        }}
+        
+        /* 5. 确保 Header 背景透明，不挡路 */
         header[data-testid="stHeader"] {{
             background-color: rgba(0,0,0,0.6) !important;
             border-bottom: 1px solid #1a1a1a !important;
         }}
-        
-        /* 确保 Toolbar 可见，箭头恢复 */
-        [data-testid="stToolbar"] {{
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            right: 2rem; /*稍微往左一点，防止贴边太紧 */
-        }}
+
         
         /* 隐藏右上角那个彩色的 Streamlit 装饰条 */
         [data-testid="stDecoration"] {{
