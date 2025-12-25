@@ -4,15 +4,19 @@ import streamlit.components.v1 as components
 import json
 import urllib.parse
 import re
-
+# 🔥 核心改动：引入侧边栏
+from engine_manager import render_sidebar
+# 1. 基础配置
 # 1. 基础配置
 st.set_page_config(layout="wide", page_title="Automation Central")
 apply_pro_style()
+render_sidebar() # 👈 侧边栏注入！
 
-# 2. 样式注入
+# 2. 样式注入 (保持你原来的黑客风格样式)
 st.markdown("""
 <style>
     .stApp { background-color: #0e1117; }
+    /* ... (保留你原来其他的 CSS 样式) ... */
     div[data-baseweb="select"] > div {
         background-color: #161b22 !important;
         border: 1px solid #30363d !important;
@@ -21,19 +25,6 @@ st.markdown("""
         background-color: #0d1117 !important;
         border: 1px solid #30363d !important;
         color: #c9d1d9 !important;
-        font-family: 'Consolas', 'Monaco', monospace;
-    }
-    div[data-testid="stMetric"] {
-        background-color: #161b22 !important;
-        border: 1px solid #30363d !important;
-    }
-    .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #ff4b4b 0%, #d62f2f 100%) !important;
-        box-shadow: 0 4px 15px rgba(255, 75, 75, 0.2) !important;
-        border: none !important;
-        height: 50px !important;
-        font-size: 18px !important;
-        font-weight: bold !important;
     }
 </style>
 """, unsafe_allow_html=True)
