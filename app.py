@@ -7,6 +7,7 @@ from openai import OpenAI
 # ======================
 st.set_page_config(layout="wide", page_title="Creative Engine")
 
+
 client = OpenAI(
     api_key=st.secrets["DEEPSEEK_KEY"],
     base_url="https://api.deepseek.com"
