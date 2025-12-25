@@ -36,15 +36,15 @@ def apply_pro_style():
            2. 🔴 红色滑块精准修复
         ================================================== */
         /* 强制主色为红色 */
-        :root {
+        :root {{
             --primary-color: #ff4b4b !important;
-        }
+        }}
 
         /* 1. 精准控制轨道 (未选中的灰色部分) */
         /* 使用 :not 选择器，排除掉选中的红色条和圆形把手 */
-        div[data-baseweb="slider"] > div:first-child > div:first-child {
+        div[data-baseweb="slider"] > div:first-child > div:first-child {{
             background-color: #444444 !important;
-        }
+        }}
 
         /* ==================================================
            3. 🩹 修复图标文字乱码
