@@ -1,52 +1,53 @@
 import streamlit as st
+import json
 from openai import OpenAI
+from engine_manager import render_sidebar, WAREHOUSE, save_data, init_data
+from style_manager import apply_pro_style
 
-# 1. 基础配置
+# ===========================
+# Configuration
+# ===========================
 st.set_page_config(layout="wide", page_title="Creative Engine")
 
-# 2. 引入通用模块
-# ⚠️ 如果这里报错 ImportError，说明你还没创建 engine_manager.py 文件
-try:
-    from engine_manager import render_sidebar, WAREHOUSE, save_data, init_data
-    render_sidebar()
-except ImportError as e:
-    st.error(f"❌ 严重错误: 找不到 engine_manager.py。请在项目根目录新建该文件！\n错误详情: {e}")
-    st.stop()
+# Apply Styles & Sidebar
+apply_pro_style()
+render_sidebar()
 
-# 3. 初始化 OpenAI
+# ===========================
+# Logic & Helpers
+# ===========================
 client = OpenAI(
     api_key=st.secrets["DEEPSEEK_KEY"],
     base_url="https://api.deepseek.com"
 )
 
-# 4. 初始化 Session
+# Session State Init
 if "ai_results" not in st.session_state:
     st.session_state.ai_results = []
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
-# 5. 页面布局
+# ===========================
+# UI Layout
+# ===========================
 center, right = st.columns([4, 2])
 
+# --- Left Column: Smart Ingest ---
 with center:
-    st.markdown("## ⚡ 智能入库")
+    st.header("Smart Ingest")
     st.session_state.input_text = st.text_area(
-        "输入灵感描述",
+        "Inspiration Input",
         st.session_state.input_text,
         height=220,
-        placeholder="例如：一只赛博朋克风格的猫，霓虹灯背景，正在喝咖啡..."
+        placeholder="Describe your tattoo idea or paste visual elements here..."
     )
 
-    if st.button("🚀 开始 AI 拆分", use_container_width=True):
+    if st.button("Start Analysis", use_container_width=True):
         if not st.session_state.input_text:
-            st.warning("⚠️ 请先输入一点内容！")
+            st.warning("Input is empty.")
         else:
-            # 引入 json 库（Python自带，不用额外安装）
-            import json
-            import re
-            
-            with st.spinner("DeepSeek 正在精准分类..."):
-                # 🔥 升级版 Prompt：强制 JSON 格式，专治“乱归类”
+            with st.spinner("Analyzing..."):
+                # Prompt remains robust for Chinese input handling
                 prompt = f"""
                 任务：将纹身描述文本拆解为结构化关键词。
                 
@@ -83,15 +84,12 @@ with center:
                     
                     parsed = []
                     
-                    # 🔥 尝试 JSON 解析 (最稳的方法)
+                    # JSON Parsing Logic
                     try:
-                        # 1. 清理一下 AI 可能带的 Markdown 标记
                         clean_json = res.replace("```json", "").replace("```", "").strip()
                         data = json.loads(clean_json)
                         
-                        # 2. 遍历 JSON 转为我们的格式
                         for cat, words in data.items():
-                            # 模糊匹配 Key (防止 AI 写成 subjects 小写等)
                             target_key = None
                             for k in WAREHOUSE:
                                 if k.lower() == cat.lower() or k.lower() in cat.lower():
@@ -104,8 +102,8 @@ with center:
                                         parsed.append({"cat": target_key, "val": w.strip()})
                                         
                     except json.JSONDecodeError:
-                        # 🚑 兜底方案：如果 JSON 解析失败，回退到原来的文本切割
-                        st.warning("⚠️ JSON 解析失败，尝试强制切割...")
+                        # Fallback Logic
+                        st.warning("JSON parsing failed, switching to fallback mode...")
                         clean_res = res.replace("：", ":").replace("\n", "|").replace("，", ",")
                         for block in clean_res.split("|"):
                             if ":" in block:
@@ -125,73 +123,56 @@ with center:
 
                     st.session_state.ai_results = parsed
 
-                    # 调试信息：如果还是空的，把原因显示出来
                     if not parsed:
-                        st.error("❌ 提取结果为空！AI 可能拒绝了回答或格式错乱。")
-                        with st.expander("查看 AI 原始回复"):
+                        st.error("No keywords extracted. The AI might have refused the request.")
+                        with st.expander("Raw AI Response"):
                             st.text(res)
 
                 except Exception as e:
-                    st.error(f"❌ 请求失败: {e}")
+                    st.error(f"Request Error: {e}")
 
-    # 显示拆分结果
+    # Display Results
     if st.session_state.ai_results:
-        st.success(f"✅ 成功提取 {len(st.session_state.ai_results)} 个关键词")
-        st.markdown("### 🧠 拆分结果")
+        st.success(f"Extracted {len(st.session_state.ai_results)} keywords")
+        st.subheader("Analysis Results")
         
-        # 结果显示区域
         selected = []
         cols = st.columns(3)
         for i, item in enumerate(st.session_state.ai_results):
             with cols[i % 3]:
-                # 默认勾选
-                if st.checkbox(f'**{item["cat"]}** · {item["val"]}', key=f'chk_{i}', value=True):
+                if st.checkbox(f'{item["cat"]} · {item["val"]}', key=f'chk_{i}', value=True):
                     selected.append(item)
         
         st.divider()
 
-        if st.button("📥 确认入库", type="primary", use_container_width=True):
-            changed_cats = set()
-            # 确保 db_all 存在
+        if st.button("Confirm Import", type="primary", use_container_width=True):
             if "db_all" not in st.session_state:
-                try:
-                    # 尝试重新初始化
-                    from engine_manager import init_data
-                    init_data()
-                except:
-                    st.error("无法连接数据库")
-                    st.stop()
-                
+                init_data()
+            
+            changed_cats = set()
             for item in selected:
-                cat = item["cat"]
-                val = item["val"]
-                current_list = st.session_state.db_all.get(cat, [])
-                
-                if val not in current_list:
-                    current_list.append(val)
-                    st.session_state.db_all[cat] = current_list
+                cat, val = item["cat"], item["val"]
+                current = st.session_state.db_all.get(cat, [])
+                if val not in current:
+                    current.append(val)
+                    st.session_state.db_all[cat] = current
                     changed_cats.add(cat)
             
             if changed_cats:
-                with st.spinner("正在同步到 GitHub..."):
-                    # 引入保存函数
-                    from engine_manager import save_data, WAREHOUSE
-                    for cat in changed_cats:
-                        save_data(WAREHOUSE[cat], st.session_state.db_all[cat])
-                
-                st.success(f"🎉 已更新分类: {', '.join(changed_cats)}")
-                st.session_state.ai_results = [] # 清空结果
+                with st.spinner("Syncing to Warehouse..."):
+                    for c in changed_cats: 
+                        save_data(WAREHOUSE[c], st.session_state.db_all[c])
+                st.success("Import Successful")
                 import time
                 time.sleep(1)
                 st.rerun()
             else:
-                st.info("没有新的词需要入库 (可能已经存在了)")
-# ===========================
-# 右侧：仓库管理区域
-# ===========================
+                st.info("No new keywords to import.")
+
+# --- Right Column: Warehouse Manager ---
 with right:
-    st.markdown("## 📦 仓库")
-    cat = st.selectbox("分类", list(WAREHOUSE.keys()))
+    st.header("Warehouse")
+    cat = st.selectbox("Category", list(WAREHOUSE.keys()))
     
     if "db_all" not in st.session_state:
         init_data()
@@ -200,9 +181,8 @@ with right:
 
     with st.container(height=500):
         if not words:
-            st.caption("暂无数据")
+            st.caption("No Data")
         for w in words:
-            # ✅ 这里就是刚才报错的地方，已经修复：
             c1, c2 = st.columns([4, 1]) 
             with c1:
                 if st.button(w, key=f"add_{w}", use_container_width=True):
