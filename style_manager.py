@@ -20,27 +20,39 @@ def apply_pro_style():
         [data-testid="stToolbarActions"], [data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
         header[data-testid="stHeader"] {{ background-color: rgba(0,0,0,0.8) !important; border-bottom: 1px solid #1a1a1a !important; height: 3.5rem !important; }}
 
-        /* 3. 清除顶部幽灵文字并重绘箭头 */
-        [data-testid="stHeader"] button[data-testid*="Sidebar"] * {{ display: none !important; }}
+        /* 1. 按钮容器保持现状，确保背景和边框干净 */
         [data-testid="stHeader"] button[data-testid*="Sidebar"] {{
             border: 1px solid #333 !important;
             background-color: #111 !important;
-            width: 36px !important;
-            height: 36px !important;
+            width: 34px !important;
+            height: 34px !important;
             position: relative !important;
         }}
+
+        /* 2. 在按钮中心画出“三条杠” */
         [data-testid="stHeader"] button[data-testid*="Sidebar"]::after {{
             content: "" !important;
             display: block !important;
             position: absolute !important;
-            top: 50% !important; left: 50% !important;
-            width: 8px !important; height: 8px !important;
-            border-top: 2px solid #888 !important;
-            border-right: 2px solid #888 !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            /* 重点：利用双重阴影画出三条线 */
+            width: 16px !important;
+            height: 2px !important;
+            background-color: #888 !important; /* 中间那条线 */
+            box-shadow: 0 -5px 0 #888, 0 5px 0 #888 !important; /* 上下两条线 */
+            transition: all 0.2s ease !important;
         }}
-        [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"]::after {{ transform: translate(-65%, -50%) rotate(45deg) !important; }}
-        [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"]::after {{ transform: translate(-35%, -50%) rotate(-135deg) !important; }}
 
+        /* 3. 悬停效果：变白 */
+        [data-testid="stHeader"] button:hover::after {{
+            background-color: #fff !important;
+            box-shadow: 0 -5px 0 #fff, 0 5px 0 #fff !important;
+        }}
+
+        /* 4. 删掉之前所有带 rotate(45deg) 或 rotate(-135deg) 的代码 */
+        /* 因为我们现在是三条杠，不需要根据展开/收起状态去旋转箭头了 */
         /* 4. 核心对齐锁死 (42px 绝对对齐) */
         [data-testid="column"] {{
             display: flex !important;
