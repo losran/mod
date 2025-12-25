@@ -100,3 +100,4 @@ def apply_pro_style():
         .stButton > button:hover {{ border-color: #FFFFFF !important; color: #FFFFFF !important; }}
         .stTextArea textarea, .stTextInput input {{ background-color: #111111 !important; border: 1px solid #333333 !important; color: #e0e0e0 !important; }}
     </style>
+    """, unsafe_allow_html=True)
