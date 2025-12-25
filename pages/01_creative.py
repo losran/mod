@@ -256,20 +256,25 @@ with col_main:
                 st.session_state.generated_cache = []; st.session_state.selected_prompts = []
                 st.rerun()
 
-if st.button("✨ 确认方案并开始润色", type="primary", use_container_width=True):
+# --- 🔵 精准加固后的润色逻辑 ---
+    if st.session_state.selected_prompts and not st.session_state.polished_text:
+        st.divider()
+        if st.button("✨ 确认方案并开始润色", type="primary", use_container_width=True):
+            # 1. 强制归档：将生成的 cache 中未选中的方案移入 history_log
+            try:
+                if 'generated_cache' in st.session_state and st.session_state.generated_cache:
+                    abandoned = [p for p in st.session_state.generated_cache if p not in st.session_state.selected_prompts]
+                    if abandoned:
+                        # 确保 history_log 是列表并追加
+                        if not isinstance(st.session_state.history_log, list):
+                            st.session_state.history_log = []
+                        st.session_state.history_log = abandoned + st.session_state.history_log
+                    
+                    # 清空当前展示，完成“迁移”视觉效果
+                    st.session_state.generated_cache = []
+            except Exception as e:
+                st.error(f"归档过程出错: {e}")
 
-    # 归档 / 清空
-    if 'history_log' not in st.session_state:
-        st.session_state.history_log = []
-
-    if st.session_state.generated_cache:
-        abandoned = [
-            p for p in st.session_state.generated_cache
-            if p not in st.session_state.selected_prompts
-        ]
-        st.session_state.history_log = abandoned + st.session_state.history_log
-
-    st.session_state.generated_cache = []
 
     # ✅ 注意：spinner 还在 if 里面
     with st.spinner("AI 注入灵魂中..."):
