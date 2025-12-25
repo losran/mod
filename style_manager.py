@@ -79,7 +79,54 @@ def apply_pro_style():
         /* ==============================
            6. 局部对齐补丁 (f-string 双括号版)
            ============================== */
+        /* ==============================
+           7. 终极对齐补丁 (强制高度一致)
+           ============================== */
         
+        /* 1. 强制设定所有列容器为底部对齐 */
+        [data-testid="column"] {{
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: flex-end !important;
+        }}
+
+        /* 2. 暴力重写 Number Input (左边的数字框) 的高度 */
+        div[data-testid="stNumberInput"] div[data-baseweb="input"] {{
+            height: 45px !important;       /* 强制高度 */
+            min-height: 45px !important;
+            border-radius: 6px !important; /* 圆角与按钮一致 */
+            overflow: hidden !important;
+            border: 1px solid #333 !important;
+            background-color: #111 !important;
+        }}
+        
+        /* 修正数字框里的输入文字位置，保证居中 */
+        div[data-testid="stNumberInput"] input {{
+            height: 45px !important;
+            line-height: 45px !important;
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+            color: #fff !important;
+        }}
+
+        /* 3. 暴力重写 Button (右边的按钮) 的高度 */
+        div[data-testid="stButton"] button {{
+            height: 45px !important;       /* 必须与上面保持一致 */
+            min-height: 45px !important;
+            line-height: 45px !important;  /* 文字垂直居中 */
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+            border: 1px solid #333 !important;
+            border-radius: 6px !important;
+            margin-top: 0px !important;    /* 防止按钮自带的 margin 捣乱 */
+        }}
+
+        /* 4. 再次确保去掉数字框的标题占位 */
+        div[data-testid="stNumberInput"] label {{
+            display: none !important;
+            height: 0 !important;
+            margin: 0 !important;
+        }}
         /* 强制让列容器内的组件底部对齐 */
         [data-testid="column"] {{
             display: flex !important;
