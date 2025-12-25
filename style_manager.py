@@ -1,95 +1,95 @@
 import streamlit as st
 
 def apply_pro_style():
-    # 加载品牌字体
+    # 保持字体加载
     font_url = "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
     
     st.markdown(f"""
     <style>
         @import url('{font_url}');
 
-        /* ==============================
-           1. 全局字体与防重叠垫片
-           ============================== */
+        /* 1. 全局字体基础 */
         html, body, [class*="css"], font, span, div, h1, h2, h3, h4, h5, h6, p, a, button, input, textarea, label {{
             font-family: 'Poppins', 'Noto Sans SC', sans-serif !important;
             color: #d0d0d0;
         }}
 
-        /* 侧边栏垫片：把内容拉下来，防止跟顶部按钮撞车 */
-        [data-testid="stSidebarUserContent"] {{
-            padding-top: 4.5rem !important; 
-        }}
+        /* 2. 侧边栏布局与防遮挡 */
+        [data-testid="stSidebar"] {{ background-color: #0a0a0a !important; border-right: 1px solid #1a1a1a !important; z-index: 99998 !important; }}
+        [data-testid="stSidebarUserContent"] {{ padding-top: 3.5rem !important; }}
+        [data-testid="stLogo"] {{ height: auto !important; z-index: 99999 !important; }}
+
+        /* =======================================================
+           🔥🔥🔥 定向清除鬼魂文字 (keyboard_...) 🔥🔥🔥
+           ======================================================= */
         
-        [data-testid="stSidebar"] {{ 
-            background-color: #0a0a0a !important; 
-            border-right: 1px solid #1a1a1a !important;
-            z-index: 99998 !important; 
+        /* 核心修复：直接抹除按钮内部的所有原生内容 */
+        [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"] *,
+        [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"] * {{
+            display: none !important;      /* 抹除所有内部标签 */
+            font-size: 0 !important;       /* 强制字号归零 */
+            color: transparent !important; /* 强制透明 */
+            width: 0 !important;
+            height: 0 !important;
         }}
 
-        /* ==============================
-           2. 按钮终极消音 (彻底杀掉 keyboard_... 文字)
-           ============================== */
+        /* 3. 按钮容器本身 (作为画板) */
         [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"],
         [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"] {{
             border: 1px solid #333 !important;
             background-color: #111 !important;
             border-radius: 4px !important;
-            width: 38px !important;
-            height: 38px !important;
+            width: 36px !important;
+            height: 36px !important;
             position: relative !important;
             z-index: 100000 !important;
-            
-            /* 强制抹除原有内容 */
-            color: transparent !important;
-            font-size: 0 !important;
-            line-height: 0 !important;
+            margin-top: 0px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }}
 
-        /* 杀掉所有原生子元素 */
-        [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"] *,
-        [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"] * {{
-            display: none !important;
-            font-size: 0 !important;
-        }}
-
-        /* ==============================
-           3. “打字”生成新箭头 (使用 Unicode 字符)
-           ============================== */
+        /* =======================================================
+           4. 纯 CSS 几何绘制箭头 (伪元素不受 display:none 影响)
+           ======================================================= */
         
-        /* 通用样式：把字写在正中心 */
+        /* 箭头骨架 */
         [data-testid="stHeader"] button::after {{
+            content: "" !important;
             display: block !important;
             position: absolute !important;
             top: 50% !important;
             left: 50% !important;
-            transform: translate(-50%, -55%) !important; /* 垂直微调 */
-            font-size: 16px !important; /* 控制箭头大小 */
-            color: #888 !important;
-            font-family: Arial, sans-serif !important; /* 确保使用通用字体显示字符 */
+            width: 8px !important;
+            height: 8px !important;
+            border-top: 2px solid #888 !important;   /* 上边框 */
+            border-right: 2px solid #888 !important; /* 右边框 */
             transition: all 0.2s ease !important;
         }}
 
-        /* ---> 侧边栏收起：打一个“右箭头”字 */
+        /* 收起状态：右箭头 > (旋转45度) */
         [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"]::after {{
-            content: "▶" !important;
+            transform: translate(-65%, -50%) rotate(45deg) !important; 
         }}
 
-        /* <--- 侧边栏展开：打一个“左箭头”字 */
+        /* 展开状态：左箭头 < (旋转-135度) */
         [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"]::after {{
-            content: "◀" !important;
+            transform: translate(-35%, -50%) rotate(-135deg) !important;
         }}
 
-        /* Hover 高亮 */
-        [data-testid="stHeader"] button:hover {{
-            border-color: #fff !important;
-            background-color: #222 !important;
-        }}
-        [data-testid="stHeader"] button:hover::after {{
-            color: #fff !important;
-        }}
+        /* Hover 反馈 */
+        [data-testid="stHeader"] button:hover {{ border-color: #fff !important; background-color: #222 !important; }}
+        [data-testid="stHeader"] button:hover::after {{ border-color: #fff !important; }}
 
-        /* ==============================
-           4. 其他界面去噪
-           ============================== */
-        [data-testid="stToolbarActions"], [data-testid="stStatusWidget"], [data-testid="stDecoration"]
+        /* 其他去噪处理 */
+        [data-testid="stToolbarActions"], [data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
+        header[data-testid="stHeader"] {{ background-color: rgba(0,0,0,0.6) !important; border-bottom: 1px solid #1a1a1a !important; height: 3.5rem !important; }}
+        
+        /* 通用组件样式 */
+        :root {{ --primary-color: #C0C0C0 !important; }}
+        .stApp {{ background-color: #000000; }}
+        .stButton > button {{ border: 1px solid #333 !important; background: #111 !important; color: #888 !important; border-radius: 6px !important; }}
+        .stButton > button:hover {{ border-color: #FFFFFF !important; color: #FFFFFF !important; }}
+        .stTextArea textarea, .stTextInput input {{ background-color: #111111 !important; border: 1px solid #333333 !important; color: #e0e0e0 !important; }}
+    </style>
+    """, unsafe_allow_html=True)
