@@ -131,7 +131,7 @@ def run_creative_pipeline(start_intent, count):
 # ==========================================
 # 3. 极简 UI 交互层
 # ==========================================
-st.markdown("## 🧠 Creative Engine")
+st.markdown("## Creative Engine")
 st.caption("Auto-Assembly -> AI Polish -> Batch Handoff")
 st.markdown("---")
 
@@ -139,7 +139,7 @@ st.markdown("---")
 user_input = st.text_area(
     "Core Idea / Subject", 
     height=120, 
-    placeholder="在此输入核心创意...\n🎲 留空则进入【盲盒模式】，系统将自动抽取核心主体并完成全套组装！"
+    placeholder="在此输入核心创意...\n 留空则进入【盲盒模式】，系统将自动抽取核心主体并完成全套组装！"
 )
 
 # --- 操作区 ---
@@ -162,7 +162,7 @@ with col_btn:
         final_intent = user_input.strip()
         if is_blind_mode:
             final_intent = smart_pick_ingredient("Subject") or "神秘图腾"
-            st.toast(f"🎲 盲盒已开启！核心主体：{final_intent}", icon="🎁")
+            st.toast(f" 盲盒已开启！核心主体：{final_intent}", icon="🎁")
         
         with st.spinner(f"正在组装 {qty} 组方案 (Core Logic Running)..."):
             st.session_state.final_solutions = run_creative_pipeline(final_intent, qty)
@@ -176,7 +176,7 @@ if st.session_state.final_solutions:
     
     # ⚠️ 我改了这个标题，如果你看到 "Polished Concepts" 说明没更新成功
     # 如果看到 "📦 Ready for Automation" 说明代码生效了
-    st.subheader("📦 Ready for Automation") 
+    st.subheader(" Ready for Automation") 
     
     # 容器化展示（只展示文本，不展示单个按钮！）
     content_text_block = ""
@@ -191,7 +191,7 @@ if st.session_state.final_solutions:
     # --- 核心修改：真正的批量投递按钮 ---
     with c_send:
         # 使用 type="primary" 红色/亮色按钮
-        if st.button(f"🚀 Send ALL {qty} Options to Automation Pipeline", type="primary", use_container_width=True):
+        if st.button(f" Send ALL {qty} Options to Automation Pipeline", type="primary", use_container_width=True):
             
             # 1. 存入 Cache (这会传递给 02 页面的 default_text)
             st.session_state.polished_text = content_text_block
