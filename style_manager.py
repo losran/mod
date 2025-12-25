@@ -2,7 +2,6 @@ import streamlit as st
 
 def apply_pro_style():
     # 1. 引入字体
-    # Material Icons: 必须引入这个，否则左上角的收起按钮会显示成 "keyboard_double_arrow_right"
     font_url = "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
     icon_url = "https://fonts.googleapis.com/icon?family=Material+Icons"
 
@@ -12,39 +11,38 @@ def apply_pro_style():
         @import url('{icon_url}');
 
         /* ==================================================
-           1. 🎯 精准打击：只隐藏右上角工具栏
-           (Share, Star, Git, Menu 都在这里)
+           1. 🧠 核弹级隐藏：彻底消灭顶部栏和它的背景色
         ================================================== */
+        /* 隐藏工具栏内容 (Share, Star, Menu) */
         [data-testid="stToolbar"] {{
             visibility: hidden !important;
             display: none !important;
         }}
         
-        /* 隐藏顶部那条彩色的装饰线 */
+        /* 隐藏顶部彩虹装饰线 */
         [data-testid="stDecoration"] {{
             display: none !important;
+        }}
+        
+        /* 🔥🔥🔥 关键新增：让整个顶部容器透明消失 🔥🔥🔥 */
+        [data-testid="stHeader"] {{
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            /* 如果觉得顶部还有空白占位，可以把下面这行注释解开，强制高度为0 */
+            /* height: 0px !important; */
         }}
 
         /* ==================================================
            2. 🩹 修复左上角图标乱码
         ================================================== */
-        /* 强制让这些类名使用图标字体，这样 keyboard_double_arrow_right 就会变回漂亮的箭头图标 */
         .material-icons, .material-icons-outlined, .material-icons-two-tone, 
         .material-icons-round, .material-icons-sharp {{
             font-family: 'Material Icons' !important;
         }}
 
         /* ==================================================
-           3. ⚠️ 关键修正：我把隐藏左侧导航的代码删掉了！
-           现在左侧的默认导航栏 (App/Creative/Automation) 会正常显示出来。
-        ================================================== */
-        /* [data-testid="stSidebarNav"] {{
-            display: none !important; 
-        }} 
-        */
-
-        /* ==================================================
-           4. 🎨 滑块与暗黑主题美化 (保留)
+           3. 🎨 滑块与暗黑主题美化
         ================================================== */
         /* 滑块轨道 (深灰) */
         div[data-baseweb="slider"] div {{ background-color: #333 !important; }}
