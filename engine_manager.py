@@ -70,35 +70,45 @@ def init_data():
 # 3. Sidebar Render (English Version)
 # ===========================
 def render_sidebar():
-    # Apply Styles
+    # 引入样式
     try:
         from style_manager import apply_pro_style
         apply_pro_style()
     except ImportError:
         pass
+        
+    # 隐藏系统自带导航
+    st.markdown("""
+        <style>
+            [data-testid="stSidebarNav"] { display: none !important; }
+        </style>
+    """, unsafe_allow_html=True)
 
     init_data()
     
-    # Optional: Display Logo if you have one, else skip
-    try:
-        st.logo("images/logo.png", icon_image="images/logo.png")
-    except:
-        pass
-
-    # 👇👇👇 纯文字版菜单 (无图标) 👇👇👇
-    st.page_link("app.py", label="Smart Ingest")
-    st.page_link("pages/01_creative.py", label="Creative Engine")
-    st.page_link("pages/02_automation.py", label="Automation")
-    # 👆👆👆 结束 👆👆👆
-    
+    # 🔥 关键修正：所有内容都要写在 'with st.sidebar:' 里面！
     with st.sidebar:
-        st.header("Engine Console")
+        # 1. Logo 区域
+        if os.path.exists("images/logo.png"):
+            st.image("images/logo.png", width=140)
+        else:
+            st.markdown("### ⚡ MOD ENGINE")
+            
         st.markdown("---")
+
+        # 2. 导航菜单 (现在它们会在侧边栏里了)
+        st.page_link("app.py", label="Smart Ingest")
+        st.page_link("pages/01_creative.py", label="Creative Engine")
+        st.page_link("pages/02_automation.py", label="Automation")
+        
+        st.markdown("---")
+    
+        # 3. 控制台和库存
+        st.header("Engine Console")
         st.markdown("### Live Inventory")
 
         if "db_all" in st.session_state:
             for k, v in st.session_state.db_all.items():
-                # Display category and count
                 st.markdown(f"**{k}** : `{len(v)}`")
         else:
             st.warning("Syncing...")
