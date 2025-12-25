@@ -3,26 +3,13 @@ import streamlit as st
 def apply_pro_style():
     font_url = "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
     
-    # =================================================================
-    # 🎨 纯代码绘制图标 (SVG Data URI) - 左右箭头版
-    # =================================================================
-    
-    # 1. 右箭头 (→) 用于 [收起状态]，提示展开
-    # Path: M5 12h14 (横线) + M12 5l7 7-7 7 (箭头头)
-    icon_right_gray = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'%3E%3C/path%3E%3Cpath d='M12 5l7 7-7 7'%3E%3C/path%3E%3C/svg%3E\")"
-    icon_right_white = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14'%3E%3C/path%3E%3Cpath d='M12 5l7 7-7 7'%3E%3C/path%3E%3C/svg%3E\")"
-
-    # 2. 左箭头 (←) 用于 [展开状态]，提示收回
-    # Path: M19 12H5 (横线) + M12 19l-7-7 7-7 (箭头头)
-    icon_left_gray = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 12H5'%3E%3C/path%3E%3Cpath d='M12 19l-7-7 7-7'%3E%3C/path%3E%3C/svg%3E\")"
-    icon_left_white = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 12H5'%3E%3C/path%3E%3Cpath d='M12 19l-7-7 7-7'%3E%3C/path%3E%3C/svg%3E\")"
-
-
     st.markdown(f"""
     <style>
         @import url('{font_url}');
 
-        /* 全局字体 */
+        /* ==============================
+           1. 全局配置
+           ============================== */
         html, body, [class*="css"], font, span, div, h1, h2, h3, h4, h5, h6, p, a, button, input, textarea, label {{
             font-family: 'Poppins', 'Noto Sans SC', sans-serif !important;
             color: #d0d0d0;
@@ -30,25 +17,23 @@ def apply_pro_style():
         .material-icons {{ font-family: 'Material Icons' !important; }}
 
         /* ==============================
-           核心布局修复 (防止遮挡)
+           2. 核心布局修复 (防止遮挡)
            ============================== */
         [data-testid="stSidebar"] {{ 
             background-color: #0a0a0a !important; 
             border-right: 1px solid #1a1a1a !important;
             z-index: 99998 !important; 
         }}
-        /* 侧边栏内容下移 */
         [data-testid="stSidebarUserContent"] {{
             padding-top: 3.5rem !important; 
         }}
-        /* Logo 区域 */
         [data-testid="stLogo"] {{
             height: auto !important;
             z-index: 99999 !important;
         }}
 
         /* ==============================
-           按钮样式重置
+           3. 按钮容器基础样式
            ============================== */
         [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"],
         [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"] {{
@@ -64,45 +49,61 @@ def apply_pro_style():
             z-index: 100000 !important;
             transition: all 0.2s ease !important;
             margin-top: 0px !important;
-            color: transparent !important; /* 隐藏原始图标 */
+            
+            /* 关键：隐藏掉原本的 "keyboard_double_arrow..." 文字 */
+            color: transparent !important; 
+            font-size: 0 !important;
         }}
-        [data-testid="stHeader"] button svg {{ display: none !important; }}
+        
+        /* 再次确保原本的 svg 和 span 彻底消失 */
+        [data-testid="stHeader"] button svg,
+        [data-testid="stHeader"] button span {{ 
+            display: none !important; 
+        }}
 
 
         /* ==============================
-           状态 A: 侧边栏关闭时 -> 显示 [右箭头 →]
+           4. 纯 CSS 画箭头 (Geometrical Construction)
+           原理：画一个正方形的 上边框 和 右边框，然后旋转
            ============================== */
-        [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"] {{
-            background-image: {icon_right_gray} !important;
-            background-repeat: no-repeat !important;
-            background-position: center !important;
-            background-size: 20px !important;
+
+        /* 通用箭头样式 */
+        [data-testid="stHeader"] button::after {{
+            content: "" !important;
+            display: inline-block !important;
+            width: 8px !important;   /* 箭头大小 */
+            height: 8px !important;
+            border-style: solid !important;
+            border-width: 2px 2px 0 0 !important; /* 只保留上和右边框 */
+            border-color: #888 !important; /* 默认灰色 */
+            transition: all 0.2s ease !important;
+            vertical-align: middle !important;
         }}
-        [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"]:hover {{
+
+        /* ---> 状态 A: 侧边栏收起 (画右箭头 >) */
+        [data-testid="stHeader"] button[data-testid="stSidebarCollapsedControl"]::after {{
+            transform: rotate(45deg) !important; /* 旋转45度变成 > */
+            margin-left: -2px !important; /* 视觉微调居中 */
+        }}
+
+        /* <--- 状态 B: 侧边栏展开 (画左箭头 <) */
+        [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"]::after {{
+            transform: rotate(-135deg) !important; /* 旋转-135度变成 < */
+            margin-left: 2px !important; /* 视觉微调居中 */
+        }}
+
+        /* Hover 高亮状态 (变白) */
+        [data-testid="stHeader"] button:hover {{
             border-color: #fff !important;
             background-color: #222 !important;
-            background-image: {icon_right_white} !important;
+        }}
+        [data-testid="stHeader"] button:hover::after {{
+            border-color: #fff !important; /* 边框变白 */
         }}
 
 
         /* ==============================
-           状态 B: 侧边栏打开时 -> 显示 [左箭头 ←]
-           ============================== */
-        [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"] {{
-            background-image: {icon_left_gray} !important;
-            background-repeat: no-repeat !important;
-            background-position: center !important;
-            background-size: 20px !important;
-        }}
-        [data-testid="stHeader"] button[data-testid="stSidebarExpandedControl"]:hover {{
-            border-color: #fff !important;
-            background-color: #222 !important;
-            background-image: {icon_left_white} !important;
-        }}
-
-
-        /* ==============================
-           其他去噪
+           5. 其他去噪与配色
            ============================== */
         [data-testid="stToolbarActions"], [data-testid="stStatusWidget"], [data-testid="stDecoration"] {{ display: none !important; }}
         header[data-testid="stHeader"] {{ background-color: rgba(0,0,0,0.6) !important; border-bottom: 1px solid #1a1a1a !important; height: 3.5rem !important; }}
