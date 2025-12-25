@@ -259,12 +259,29 @@ with col_main:
 # --- 🔵 精准加固后的润色逻辑 ---
 if st.session_state.selected_prompts and not st.session_state.polished_text:
     st.divider()
+
     if st.button("✨ 确认方案并开始润色", type="primary", use_container_width=True):
-        # 1. 强制归档：将生成的 cache 中未选中的方案移入 history_log
-        try:
-            if 'generated_cache' in st.session_state and st.session_state.generated_cache:
-                # 清空当前展示，完成“迁移”视觉效果
-                st.session_state.generated_cache = []
+
+        # ✅ 0. 确保 history_log 存在（这是你刚刚那个报错的根源）
+        if 'history_log' not in st.session_state:
+            st.session_state.history_log = []
+
+        # ✅ 1. 先归档：用还没被清空的 generated_cache
+        if st.session_state.generated_cache:
+            abandoned = [
+                p for p in st.session_state.generated_cache
+                if p not in st.session_state.selected_prompts
+            ]
+            if abandoned:
+                st.session_state.history_log = abandoned + st.session_state.history_log
+
+        # ✅ 2. 再清空展示缓存（顺序必须在这里）
+        st.session_state.generated_cache = []
+
+        # ✅ 3. 再进入后续润色流程（你原本已有的那套）
+        # —— 后面的 AI 润色代码保持不动
+
+        
         except Exception as e:
             st.error(f"归档过程出错: {e}")         
 
