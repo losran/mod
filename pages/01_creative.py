@@ -5,55 +5,62 @@ import random
 import time
 
 # ==========================================
-# 🚑 0. 路径修复
+# 0. 核心规则：set_page_config 必须是第一个命令
+# ==========================================
+st.set_page_config(
+    layout="wide", 
+    page_title="Creative Engine",
+    initial_sidebar_state="expanded" # 默认展开，防止看不见
+)
+
+# ==========================================
+# 1. 路径与引用 (只引入纯函数，不引入页面逻辑)
 # ==========================================
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(current_dir)
 if root_dir not in sys.path:
     sys.path.append(root_dir)
 
-# ==========================================
-# 🔍 1. 显式引入 (不隐藏报错)
-# ==========================================
-# 如果这里报错，屏幕上会直接显示红色错误信息，方便我们知道是缺少了哪个文件
-from style_manager import apply_pro_style
-from engine_manager import init_data 
+# 显式引入样式函数
+try:
+    from style_manager import apply_pro_style
+    # 假设 engine_manager 只负责数据，不负责 UI，如果它也负责 UI，请暂时注释掉
+    from engine_manager import init_data 
+except ImportError:
+    st.error("⚠️ 模块缺失，请检查 style_manager.py 是否在根目录")
+    def apply_pro_style(): pass
+    def init_data(): pass
 
 # ==========================================
-# 🛠️ 2. 页面配置与导航
+# 2. 执行 UI 渲染
 # ==========================================
-st.set_page_config(
-    layout="wide", 
-    page_title="Creative Engine",
-    initial_sidebar_state="expanded" # 默认展开
-)
-
-# 加载数据和样式
-init_data()
+# A. 应用样式 (CSS)
 apply_pro_style()
 
-# 🔥 手动绘制侧边栏 (不依赖外部文件)
-def draw_sidebar_local():
-    with st.sidebar:
-        st.header("IViQD System")
-        st.success("✅ Sidebar Active") # 调试用：如果你看到这个绿条，说明侧边栏没挂
-        st.markdown("---")
-        
-        # 导航链接
-        st.page_link("app.py", label="📥 Smart Ingest", icon="📥")
-        st.page_link("pages/01_creative.py", label="🧠 Creative Core", icon="🧠")
-        st.page_link("pages/02_automation.py", label="⚙️ Automation", icon="⚙️")
-        
-        st.markdown("---")
-        # 队列状态
-        q_len = len(st.session_state.get("automation_queue", []))
-        st.info(f"Queue Pending: {q_len}")
+# B. 初始化数据
+init_data()
 
-draw_sidebar_local()
+# C. 绘制侧边栏 (在这里绘制，保证只绘制一次)
+with st.sidebar:
+    st.header("IViQD System")
+    st.markdown("---")
+    
+    # 导航区
+    st.page_link("app.py", label="📥 Smart Ingest")
+    st.page_link("pages/01_creative.py", label="🧠 Creative Core")
+    st.page_link("pages/02_automation.py", label="⚙️ Automation")
+    
+    st.markdown("---")
+    
+    # 状态区
+    queue = st.session_state.get("automation_queue", [])
+    st.caption(f"Queue: {len(queue)} tasks")
 
 # ==========================================
-# 3. 状态管理
+# 3. 页面业务逻辑
 # ==========================================
+
+# 状态初始化
 if "current_polish_result" not in st.session_state:
     st.session_state.current_polish_result = None
 if "automation_queue" not in st.session_state:
@@ -61,70 +68,39 @@ if "automation_queue" not in st.session_state:
 if "current_qty" not in st.session_state:
     st.session_state.current_qty = 4
 
-# ==========================================
-# 4. 业务逻辑 (模拟 AI 润色)
-# ==========================================
-def run_creative_logic(intent):
-    # 模拟从 engine_manager 拿数据
-    db = st.session_state.get("db_all", {})
-    styles = db.get("StyleSystem", ["Cyberpunk", "Traditional", "Minimalist"])
-    random_style = random.choice(styles) if styles else "Mixed"
-    
-    return f"""
-    ### 🎨 Concept: {intent}
-    **Style Injection:** {random_style}
-    
-    **Visual Description:**
-    A sophisticated composition focusing on the '{intent}'. 
-    The design utilizes negative space and flow to complement the body's natural lines.
-    High contrast blackwork is used for the main subject, softened by stippling shading.
-    """
+# 模拟 AI 逻辑
+def ai_logic(text):
+    return f"【Polished Concept】\nSubject: {text}\nStyle: Silver Chrome & Cyberpunk\nVisual: High contrast, negative space usage."
 
-# ==========================================
-# 5. 主界面布局
-# ==========================================
+# --- 主界面布局 ---
 st.title("🧠 Creative Core")
+st.caption("Fix: Sidebar Visibility & Structure")
 st.markdown("---")
 
-col_main, col_settings = st.columns([3, 1])
+col1, col2 = st.columns([3, 1])
 
-with col_main:
-    user_input = st.text_area("Input Subject / Intent", height=150, placeholder="例如：一只机械风格的蝴蝶...")
+with col1:
+    user_input = st.text_area("Input", height=150, placeholder="Type something...")
 
-with col_settings:
-    st.subheader("Settings")
-    qty = st.number_input("Batch Size", 1, 8, 4)
+with col2:
+    st.markdown("#### Settings")
+    qty = st.number_input("Batch", 1, 8, 4)
     st.write("")
-    if st.button("✨ Generate Ideas", type="primary", use_container_width=True):
-        if not user_input.strip():
-            st.warning("Please enter a subject.")
-        else:
+    if st.button("✨ Generate", type="primary", use_container_width=True):
+        if user_input:
             with st.spinner("Processing..."):
                 time.sleep(0.5)
-                res = run_creative_logic(user_input)
-                st.session_state.current_polish_result = res
+                st.session_state.current_polish_result = ai_logic(user_input)
                 st.session_state.current_qty = qty
                 st.rerun()
 
-# ==========================================
-# 6. 结果展示区
-# ==========================================
+# --- 结果展示 ---
 if st.session_state.current_polish_result:
     st.markdown("---")
-    st.subheader("💎 Result")
+    st.info(st.session_state.current_polish_result)
     
-    c1, c2 = st.columns([3, 1])
-    with c1:
-        st.info(st.session_state.current_polish_result)
-    
-    with c2:
-        st.write("") # Spacer
-        if st.button("🚀 Send to Automation", type="primary", use_container_width=True):
-            st.session_state.automation_queue.append({
-                "prompt": st.session_state.current_polish_result,
-                "count": st.session_state.current_qty,
-                "status": "pending"
-            })
-            st.success("✅ Sent to Queue!")
-            time.sleep(1)
-            st.rerun()
+    if st.button("🚀 Send to Queue", type="primary"):
+        st.session_state.automation_queue.append("Task")
+        st.success("Sent!")
+        time.sleep(1)
+        st.rerun()
