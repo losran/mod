@@ -1,89 +1,104 @@
+# engine_manager.py
 import streamlit as st
+import requests
+import base64
 
-def apply_pro_style():
-    """
-    视觉管理：隐藏原生导航、焊死侧边栏、银色主题
-    """
-    font_url = "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
-    icon_url = "https://fonts.googleapis.com/icon?family=Material+Icons"
+# ===========================
+# 1. Config
+# ===========================
+REPO = "losran/mod" # Make sure this is correct
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 
-    st.markdown(f"""
-    <style>
-        @import url('{font_url}');
-        @import url('{icon_url}');
+WAREHOUSE = {
+    "Subject": "data/subjects.txt",
+    "Action": "data/actions.txt",
+    "Mood": "data/moods.txt",
+    "Usage": "data/usage.txt",
+    "StyleSystem": "data/styles_system.txt",
+    "Technique": "data/styles_technique.txt",
+    "Color": "data/styles_color.txt",
+    "Texture": "data/styles_texture.txt",
+    "Composition": "data/styles_composition.txt",
+    "Accent": "data/styles_accent.txt",
+}
 
-        /* ==================================================
-           1. 🧹 侧边栏大扫除 (关键！)
-        ================================================== */
-        /* 🔥 核心：隐藏 Streamlit 自带的那一坨文件名导航 (app, creative...) */
-        [data-testid="stSidebarNav"] {{
-            display: none !important;
-        }}
+# ===========================
+# 2. Core Functions
+# ===========================
+@st.cache_data(ttl=600)
+def fetch_repo_data():
+    data_map = {}
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    for k, path in WAREHOUSE.items():
+        try:
+            url = f"https://api.github.com/repos/{REPO}/contents/{path}"
+            r = requests.get(url, headers=headers, timeout=5)
+            if r.status_code == 200:
+                content = base64.b64decode(r.json()["content"]).decode()
+                data_map[k] = [i.strip() for i in content.splitlines() if i.strip()]
+            else:
+                data_map[k] = []
+        except:
+            data_map[k] = []
+    return data_map
 
-        /* 🔥 核心：隐藏折叠按钮 (把门焊死，不许收起) */
-        [data-testid="stSidebarCollapsedControl"] {{
-            display: none !important;
-        }}
+def save_data(path, data_list):
+    url = f"https://api.github.com/repos/{REPO}/contents/{path}"
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    try:
+        old_resp = requests.get(url, headers=headers).json()
+        sha = old_resp.get("sha")
+        content_str = "\n".join(sorted(list(set(data_list))))
+        b64_content = base64.b64encode(content_str.encode()).decode()
         
-        /* 移动端也不许收起 */
-        section[data-testid="stSidebar"] > div:first-child {{
-             /* 保持默认宽度 */
-        }}
+        payload = {
+            "message": "update via engine",
+            "content": b64_content,
+            "sha": sha
+        }
+        requests.put(url, headers=headers, json=payload)
+        return True
+    except Exception as e:
+        print(f"Save error: {e}")
+        return False
 
-        /* ==================================================
-           2. 🎨 侧边栏美化 (银色高级感)
-        ================================================== */
-        /* 背景色：深灰黑，增加质感 */
-        [data-testid="stSidebar"] {{
-            background-color: #0a0a0a !important;
-            border-right: 1px solid #222 !important;
-            min-width: 260px !important; /* 稍微宽一点，更大气 */
-        }}
-        
-        /* 强制侧边栏文字变白/银 */
-        [data-testid="stSidebar"] *, 
-        [data-testid="stSidebar"] span, 
-        [data-testid="stSidebar"] div {{
-            color: #d0d0d0 !important;
-        }}
-        
-        /* 选中链接的高亮：银色左边框 + 深背景 */
-        [data-testid="stSidebar"] a[aria-current="page"] {{
-            background-color: #1a1a1a !important;
-            border-left: 4px solid #C0C0C0 !important; /* 银条 */
-            color: #ffffff !important;
-            padding-left: 1rem !important;
-            transition: all 0.2s ease;
-        }}
-        
-        /* 鼠标悬停 */
-        [data-testid="stSidebar"] a:hover {{
-            background-color: #111 !important;
-            color: #fff !important;
-        }}
+def init_data():
+    if "db_all" not in st.session_state:
+        st.session_state.db_all = fetch_repo_data()
 
-        /* ==================================================
-           3. 🛠️ 全局银色主题
-        ================================================== */
-        :root {{ --primary-color: #C0C0C0 !important; }}
-        .stApp {{ background-color: #000000; }}
+# ===========================
+# 3. Sidebar Render (English Version)
+# ===========================
+def render_sidebar():
+    # Apply Styles
+    try:
+        from style_manager import apply_pro_style
+        apply_pro_style()
+    except ImportError:
+        pass
+
+    init_data()
+    
+    # Optional: Display Logo if you have one, else skip
+    try:
+        st.logo("images/logo.png", icon_image="images/logo.png")
+    except:
+        pass
+
+    with st.sidebar:
+        st.header("Engine Console")
+        st.markdown("---")
+        st.markdown("### Live Inventory")
+
+        if "db_all" in st.session_state:
+            for k, v in st.session_state.db_all.items():
+                # Display category and count
+                st.markdown(f"**{k}** : `{len(v)}`")
+        else:
+            st.warning("Syncing...")
         
-        /* 按钮：亮银色 */
-        .stButton > button[kind="primary"] {{
-            background: linear-gradient(135deg, #e0e0e0 0%, #ffffff 100%) !important;
-            color: #000 !important;
-            border: 1px solid #fff !important;
-            font-weight: 700 !important;
-            box-shadow: 0 0 10px rgba(255,255,255,0.2) !important;
-        }}
-        
-        /* 输入框背景 */
-        .stTextInput input, .stTextArea textarea, .stNumberInput input {{
-            background-color: #111 !important;
-            border: 1px solid #333 !important;
-            color: #eee !important;
-        }}
-        
-        h1, h2, h3 {{ font-family: 'Poppins', sans-serif !important; color: #fff !important; }}
-    </style>
-    """, unsafe_allow_html=True)
+        st.markdown("---")
+        if st.button("Refresh All", use_container_width=True):
+            st.cache_data.clear()
+            st.session_state.db_all = fetch_repo_data()
+            st.rerun()
