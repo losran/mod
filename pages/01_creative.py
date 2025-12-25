@@ -172,7 +172,22 @@ with col_gallery:
                     if st.checkbox(i, key=f"insp_lib_{abs(hash(i))}", disabled=is_working):
                         if not is_working and i not in st.session_state.selected_prompts:
                             st.session_state.selected_prompts.append(i)
-
+    # 📜 历史档案区 (永驻下方)
+    st.divider()
+    st.subheader("📜 历史档案")
+    if st.session_state.history_log:
+        with st.container(height=400, border=True):
+            for h_idx, h_text in enumerate(st.session_state.history_log):
+                is_checked = h_text in st.session_state.selected_prompts
+                if st.checkbox(f"备选 {h_idx+1}: {h_text}", key=f"h_l_{h_idx}", value=is_checked, disabled=is_working):
+                    if not is_working:
+                        if h_text not in st.session_state.selected_prompts:
+                            st.session_state.selected_prompts.append(h_text)
+                            st.rerun()
+        
+        if st.button("🗑️ 清空历史", use_container_width=True, disabled=is_working):
+            st.session_state.history_log = []
+            st.rerun()
 
 # --- 🔵 左侧：核心生成区 ---
 with col_main:
