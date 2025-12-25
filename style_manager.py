@@ -99,6 +99,32 @@ def apply_pro_style():
             border: 1px solid #333 !important;
             background-color: #111 !important;
         }}
+
+        /* 1. 强制列容器内的所有元素高度撑满并居中对齐 */
+        [data-testid="column"] {{
+            display: flex !important;
+            align-items: flex-end !important;
+        }}
+
+        /* 2. 强制锁定数字输入框容器的高度 */
+        div[data-testid="stNumberInput"] div[data-baseweb="input"] {{
+            height: 40px !important;       /* 核心：定死高度 */
+            min-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+        }}
+
+        /* 3. 强制锁定按钮的高度与输入框一致 */
+        div[data-testid="stButton"] button {{
+            height: 40px !important;       /* 核心：必须与上面一致 */
+            min-height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+            line-height: 1 !important;
+        }}
         
         /* 修正数字框里的输入文字位置，保证居中 */
         div[data-testid="stNumberInput"] input {{
