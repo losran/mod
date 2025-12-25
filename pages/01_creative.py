@@ -10,7 +10,44 @@ from engine_manager import render_sidebar, WAREHOUSE, save_data
 # Configuration
 # ===========================
 st.set_page_config(layout="wide", page_title="Creative Engine")
+# --- ✂️ 复制这段代码 (终极修复补丁) ✂️ ---
+st.markdown("""
+<style>
+    /* 1. 引入图标字体 (修复那个奇怪的 keyboard_... 文字) */
+    @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
+    /* 2. 彻底隐藏右上角工具栏 (Share, Star, Menu) */
+    [data-testid="stToolbar"] {
+        visibility: hidden !important;
+        display: none !important;
+    }
+    
+    /* 3. 隐藏顶部的彩色装饰线 */
+    [data-testid="stDecoration"] {
+        display: none !important;
+    }
+
+    /* 4. 隐藏左上角的默认页面导航 */
+    [data-testid="stSidebarNav"] {
+        display: none !important;
+    }
+
+    /* 5. 修复滑块看不见的问题 (强制高亮) */
+    div[data-baseweb="slider"] div { background-color: #333 !important; }
+    div[data-baseweb="slider"] div[class*="css"] { background-color: #e0e0e0 !important; }
+    div[role="slider"] {
+        background-color: #fff !important;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.8) !important;
+        border: none !important;
+    }
+    div[data-testid="stThumbValue"] {
+        background-color: #000 !important;
+        color: #fff !important;
+        border: 1px solid #fff !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+# --- ✂️ 结束 ✂️ ---
 # Apply Styles & Sidebar
 apply_pro_style()
 render_sidebar()
