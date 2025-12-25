@@ -1,6 +1,9 @@
 import streamlit as st
 
 def apply_pro_style():
+    """
+    视觉管理：隐藏原生导航、焊死侧边栏、银色主题
+    """
     font_url = "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;500;600&display=swap"
     icon_url = "https://fonts.googleapis.com/icon?family=Material+Icons"
 
@@ -10,69 +13,77 @@ def apply_pro_style():
         @import url('{icon_url}');
 
         /* ==================================================
-           1. ⚪ 银色滑块 (Silver Slider)
+           1. 🧹 侧边栏大扫除 (关键！)
         ================================================== */
-        :root {{ --primary-color: #C0C0C0 !important; --text-color: #E0E0E0 !important; }}
-        div[role="slider"] {{
-            background-color: #FFFFFF !important;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.6) !important;
-            border: 1px solid #C0C0C0 !important;
+        /* 🔥 核心：隐藏 Streamlit 自带的那一坨文件名导航 (app, creative...) */
+        [data-testid="stSidebarNav"] {{
+            display: none !important;
         }}
-        div[data-testid="stThumbValue"] {{ background-color: #1a1a1a !important; border: 1px solid #555 !important; }}
 
-        /* ==================================================
-           2. 🖱️ 按钮交互系统 (重点看这里!)
-        ================================================== */
+        /* 🔥 核心：隐藏折叠按钮 (把门焊死，不许收起) */
+        [data-testid="stSidebarCollapsedControl"] {{
+            display: none !important;
+        }}
         
-        /* A. 【未选中】普通按钮 (Secondary) - 暗色 */
-        .stButton > button[kind="secondary"] {{
-            border: 1px solid #333 !important;
-            background: #111 !important;
-            color: #888 !important;
-            transition: all 0.2s ease-in-out !important;
-        }}
-        /* 鼠标移上去：变亮 */
-        .stButton > button[kind="secondary"]:hover {{
-            border-color: #fff !important;
-            color: #fff !important;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.4) !important;
-            transform: translateY(-1px);
+        /* 移动端也不许收起 */
+        section[data-testid="stSidebar"] > div:first-child {{
+             /* 保持默认宽度 */
         }}
 
-        /* B. 【已选中】高亮按钮 (Primary) - 永久亮银色！ */
-        /* 只要你在 Python 里写 type="primary"，它就长这样，永久发光 */
-        .stButton > button[kind="primary"] {{
-            background: #E0E0E0 !important;   /* 亮银底色 */
-            color: #000000 !important;        /* 黑字 (对比度最高) */
-            border: 1px solid #FFFFFF !important;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important; /* 强烈光晕 */
-            font-weight: 600 !important;
-            transform: scale(1.02) !important; /* 稍微大一点，凸显选中 */
+        /* ==================================================
+           2. 🎨 侧边栏美化 (银色高级感)
+        ================================================== */
+        /* 背景色：深灰黑，增加质感 */
+        [data-testid="stSidebar"] {{
+            background-color: #0a0a0a !important;
+            border-right: 1px solid #222 !important;
+            min-width: 260px !important; /* 稍微宽一点，更大气 */
         }}
-        /* 选中状态下鼠标移上去：保持高亮 */
-        .stButton > button[kind="primary"]:hover {{
-            background: #FFFFFF !important;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8) !important;
+        
+        /* 强制侧边栏文字变白/银 */
+        [data-testid="stSidebar"] *, 
+        [data-testid="stSidebar"] span, 
+        [data-testid="stSidebar"] div {{
+            color: #d0d0d0 !important;
         }}
-
-        /* C. 【临时补救】点击后的聚焦状态 */
-        /* 让你刚点完还没移开鼠标时也能保持亮着 */
-        .stButton > button:focus:not(:active) {{
-            border-color: #C0C0C0 !important;
+        
+        /* 选中链接的高亮：银色左边框 + 深背景 */
+        [data-testid="stSidebar"] a[aria-current="page"] {{
+            background-color: #1a1a1a !important;
+            border-left: 4px solid #C0C0C0 !important; /* 银条 */
+            color: #ffffff !important;
+            padding-left: 1rem !important;
+            transition: all 0.2s ease;
+        }}
+        
+        /* 鼠标悬停 */
+        [data-testid="stSidebar"] a:hover {{
+            background-color: #111 !important;
             color: #fff !important;
         }}
 
         /* ==================================================
-           3. 🙈 顶部清理 & 基础样式
+           3. 🛠️ 全局银色主题
         ================================================== */
-        header[data-testid="stHeader"] {{ background: transparent !important; }}
-        [data-testid="stToolbar"], [data-testid="stDecoration"] {{ display: none !important; }}
-        .material-icons, .material-icons-outlined {{ font-family: 'Material Icons' !important; }}
+        :root {{ --primary-color: #C0C0C0 !important; }}
         .stApp {{ background-color: #000000; }}
-        [data-testid="stSidebar"] {{ background-color: #0a0a0a; border-right: 1px solid #1a1a1a; }}
-        h1, h2, h3, p, span, label, div {{ font-family: 'Poppins', 'Noto Sans SC', sans-serif !important; color: #d0d0d0; }}
-        .stTextArea textarea, .stTextInput input, .stSelectbox div[data-baseweb="select"] > div {{
-            background-color: #111111 !important; border: 1px solid #333333 !important; color: #e0e0e0 !important;
+        
+        /* 按钮：亮银色 */
+        .stButton > button[kind="primary"] {{
+            background: linear-gradient(135deg, #e0e0e0 0%, #ffffff 100%) !important;
+            color: #000 !important;
+            border: 1px solid #fff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 0 10px rgba(255,255,255,0.2) !important;
         }}
+        
+        /* 输入框背景 */
+        .stTextInput input, .stTextArea textarea, .stNumberInput input {{
+            background-color: #111 !important;
+            border: 1px solid #333 !important;
+            color: #eee !important;
+        }}
+        
+        h1, h2, h3 {{ font-family: 'Poppins', sans-serif !important; color: #fff !important; }}
     </style>
-    """, unsafe_allow_html=True)v
+    """, unsafe_allow_html=True)
