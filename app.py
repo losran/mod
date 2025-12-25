@@ -2,6 +2,19 @@ import streamlit as st
 import json
 from openai import OpenAI
 from engine_manager import render_sidebar, WAREHOUSE, save_data, init_data
+st.markdown("""
+<script>
+(function () {
+  const kill = () => {
+    document
+      .querySelectorAll('button[title="keyboard_double_arrow_right"], button[title="keyboard_double_arrow_left"]')
+      .forEach(btn => btn.removeAttribute('title'));
+  };
+  kill();
+  setInterval(kill, 500);
+})();
+</script>
+""", unsafe_allow_html=True)
 from style_manager import apply_pro_style
 
 # ===========================
