@@ -7,8 +7,11 @@ def apply_pro_style():
     <style>
         @import url('{font_url}');
 
-        /* 1. 基础全局样式 */
-        html, body, [class*="css"], font, span, div, h1, h2, h3, h4, h5, h6, p, a, button, input, textarea, label {{
+        /* 1. 全局字体：排除掉带 Icon 关键词的标签，让图标回归原生字体 */
+        html, body, [class*="css"], font, 
+        span:not([class*="Icon"]), 
+        div:not([class*="Icon"]), 
+        h1, h2, h3, h4, h5, h6, p, a, button, input, textarea, label {{
             font-family: 'Poppins', 'Noto Sans SC', sans-serif !important;
             color: #d0d0d0;
         }}
