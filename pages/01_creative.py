@@ -142,15 +142,22 @@ user_input = st.text_area(
     placeholder="在此输入核心创意...\n 留空则进入【盲盒模式】，系统将自动抽取核心主体并完成全套组装！"
 )
 
-# --- 操作区 ---
-col_num, col_btn, col_blank = st.columns([1, 2, 3])
-
+# 1. 在 st.columns 里加上 vertical_alignment="bottom"
+# 这会让这一行里的所有东西，不管高的矮的，全部“底边对齐”！
+col_num, col_btn, col_blank = st.columns([1, 2, 3], vertical_alignment="bottom")
 
 with col_num:
-    qty = st.number_input("Batch Size", min_value=1, max_value=8, value=4)
-    
+    # 2. 加上 label_visibility="collapsed"
+    # 这会彻底删掉数字框头顶的文字占位，而不是仅仅隐藏它
+    qty = st.number_input("Batch Size", min_value=1, max_value=8, value=4, label_visibility="collapsed")
+
 with col_btn:
-    st.write("") # Layout spacer
+    # 按钮保持不变
+    is_blind_mode = not user_input.strip()
+    btn_text = "✨ Generate (Blind Box)" if is_blind_mode else "✨ Generate Concepts"
+    
+    if st.button(btn_text, type="primary", use_container_width=True):
+        # ... (后续逻辑不变)
     
     is_blind_mode = not user_input.strip()
     btn_text = "✨ Generate (Blind Box)" if is_blind_mode else "✨ Generate Concepts"
