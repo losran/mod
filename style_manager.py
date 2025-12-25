@@ -32,7 +32,7 @@ def apply_pro_style():
         ========================= */
         #inventory-panel {
             position: fixed;
-            left: 20px;
+            left: 300px;   /* ← 这里！！ */
             bottom: 20px;
             width: 220px;
             background: rgba(22,23,29,0.95);
@@ -41,6 +41,7 @@ def apply_pro_style():
             padding: 14px;
             z-index: 60;
         }
+
 
         #inventory-panel h4 {
             margin: 0 0 10px 0;
