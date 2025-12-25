@@ -105,5 +105,9 @@ def apply_pro_style():
             border-color: #888 !important;
             box-shadow: 0 0 5px rgba(255,255,255,0.2) !important;
         }}
+             /* ===== 1. 彻底隐藏 Streamlit 自带侧边栏按钮 ===== */
+        [data-testid="stToolbar"] {{
+            display: none !important;
+        }}
     </style>
     """, unsafe_allow_html=True)
