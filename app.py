@@ -71,20 +71,26 @@ if "input_text" not in st.session_state:
 # ======================
 # 页面布局
 # ======================
-left, center, right = st.columns([1.2, 4, 2])
+# 删掉 left，只保留中间和右侧
+center, right = st.columns([4, 2])
 
-# ======================
-# 左下角：📊 库存状态栏（固定在底部）
-# ======================
-with left:
-    # ⬆️ 上方占位，把内容顶下去
-    st.markdown("<div style='height:65vh'></div>", unsafe_allow_html=True)
 
-    # ⬇️ 真正的库存状态
+# 侧边栏：📊 库存状态
+# ======================
+with st.sidebar:
+    st.title("🚀 Creative Engine") # 可以在侧边栏加个标题
+    st.markdown("---")
     st.markdown("### 📊 库存状态")
-    for k, v in WAREHOUSE.items():
-        st.caption(f"{k}: {len(get_data(v))}")
-
+    
+    # 注意：这里改用 db_all 以提高加载速度，避免重复请求 GitHub
+    for k in WAREHOUSE.keys():
+        count = len(db_all.get(k, []))
+        # 使用 metric 组件看起来更专业
+        st.write(f"**{k}** : `{count}`") 
+    
+    st.markdown("---")
+    if st.button("🔄 刷新仓库数据", use_container_width=True):
+        st.rerun()
 # ======================
 # 中间：⚡ 智能拆分 & 入库
 # ======================
