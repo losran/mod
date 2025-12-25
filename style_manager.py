@@ -8,7 +8,16 @@ def apply_pro_style():
     <style>
         @import url('{font_url}');
         @import url('{icon_url}');
-
+             /* ===== 隐藏 sidebar toggle 的文字标签，只保留点击功能 ===== */
+        [data-testid="stToolbar"] span {{
+            font-size: 0 !important;
+            line-height: 0 !important;
+        }}
+    
+        /* 防止 material icon 名称 fallback 成文字 */
+        [data-testid="stToolbar"] .material-icons {{
+            font-size: 0 !important;
+        }}
         :root {{
             --primary-color: #C0C0C0 !important;
             --text-color: #E0E0E0 !important;
