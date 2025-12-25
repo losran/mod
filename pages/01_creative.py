@@ -267,13 +267,6 @@ if st.session_state.selected_prompts and not st.session_state.polished_text:
         # 1. 强制归档：将生成的 cache 中未选中的方案移入 history_log
         try:
             if 'generated_cache' in st.session_state and st.session_state.generated_cache:
-                abandoned = [p for p in st.session_state.generated_cache if p not in st.session_state.selected_prompts]
-                if abandoned:
-                    # 确保 history_log 是列表并追加
-                    if not isinstance(st.session_state.history_log, list):
-                        st.session_state.history_log = []
-                    st.session_state.history_log = abandoned + st.session_state.history_log
-                
                 # 清空当前展示，完成“迁移”视觉效果
                 st.session_state.generated_cache = []
         except Exception as e:
