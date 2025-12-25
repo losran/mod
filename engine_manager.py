@@ -6,7 +6,7 @@ import base64
 # ===========================
 # 1. Config
 # ===========================
-REPO = "losran/tattoo-ai-tool" # Make sure this is correct
+REPO = "losran/mod" # Make sure this is correct
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
 
 WAREHOUSE = {
