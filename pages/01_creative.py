@@ -10,7 +10,32 @@ from engine_manager import render_sidebar, WAREHOUSE, save_data
 # Configuration
 # ===========================
 st.set_page_config(layout="wide", page_title="Creative Engine")
-
+# --- ✂️ 从这里开始复制 ✂️ ---
+# 🔥 局部强制补丁：专门修复滑块看不见的问题
+st.markdown("""
+<style>
+    /* 1. 轨道变深灰 (让背景显出来) */
+    div[data-baseweb="slider"] div { background-color: #333 !important; }
+    
+    /* 2. 选中条变亮银色 */
+    div[data-baseweb="slider"] div[class*="css"] { background-color: #e0e0e0 !important; }
+    
+    /* 3. 滑块圆点变纯白+发光 */
+    div[role="slider"] {
+        background-color: #fff !important;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.8) !important;
+        border: none !important;
+    }
+    
+    /* 4. 数值框变黑底白字 */
+    div[data-testid="stThumbValue"] {
+        background-color: #000 !important;
+        color: #fff !important;
+        border: 1px solid #fff !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+# --- ✂️ 复制结束 ✂️ ---
 # Apply Styles & Sidebar
 apply_pro_style()
 render_sidebar()
