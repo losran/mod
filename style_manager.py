@@ -41,6 +41,19 @@ def apply_pro_style():
             padding: 14px;
             z-index: 60;
         }
+        /* 📊 库存状态：强制左下角固定 */
+        #inventory-panel {
+            position: fixed;
+            left: 24px;
+            bottom: 24px;
+            width: 220px;
+            background: #16171d;
+            border: 1px solid #262730;
+            padding: 14px 16px;
+            border-radius: 6px;
+            z-index: 999;
+        }
+
 
 
         #inventory-panel h4 {
@@ -78,3 +91,4 @@ def apply_pro_style():
         }
     </style>
     """, unsafe_allow_html=True)
+    
