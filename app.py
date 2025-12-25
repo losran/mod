@@ -41,64 +41,95 @@ with center:
         if not st.session_state.input_text:
             st.warning("⚠️ 请先输入一点内容！")
         else:
-            with st.spinner("DeepSeek 正在思考中..."):
-                # 🔥 1. 加强版 Prompt：强制规定格式
+            # 引入 json 库（Python自带，不用额外安装）
+            import json
+            import re
+            
+            with st.spinner("DeepSeek 正在精准分类..."):
+                # 🔥 升级版 Prompt：强制 JSON 格式，专治“乱归类”
                 prompt = f"""
-                任务：提取关键词并分类。
+                任务：将纹身描述文本拆解为结构化关键词。
                 
-                请严格遵守以下 JSON 风格格式返回（不要说废话，不要Markdown代码块）：
-                Subject: 词1, 词2
-                Action: 词1, 词2
-                Mood: 词1
-                StyleSystem: 词1
+                【重要规则】
+                1. 请务必区分：
+                   - Subject (主体): 具体的物体、生物 (如: 猫, 骷髅, 玫瑰)
+                   - StyleSystem (风格): 艺术流派 (如: 赛博朋克, Old School, 水墨)
+                   - Mood (情绪): 氛围感受 (如: 压抑, 欢快, 神圣)
+                   - Action (动作): 动态 (如: 奔跑, 燃烧, 缠绕)
+                2. 不要把风格和情绪全塞进 Subject！
                 
-                可用分类库（必须使用以下英文Key）：
-                Subject (主体), Action (动作), Mood (情绪), Usage (部位), 
-                StyleSystem (风格体系), Technique (技法), Color (色彩), 
-                Texture (质感), Composition (构图), Accent (点缀)
+                【输出格式】
+                请直接返回纯 JSON 数据，不要包含 ```json 代码块标记。格式如下：
+                {{
+                    "Subject": ["词1", "词2"],
+                    "Action": ["词1"],
+                    "Mood": ["词1"],
+                    "StyleSystem": ["词1"],
+                    "Usage": ["词1"]
+                }}
+                
+                可用Key: Subject, Action, Mood, Usage, StyleSystem, Technique, Color, Texture, Composition, Accent
 
-                输入内容：{st.session_state.input_text}
+                输入文本：{st.session_state.input_text}
                 """
                 
                 try:
-                    res = client.chat.completions.create(
+                    res_obj = client.chat.completions.create(
                         model="deepseek-chat",
                         messages=[{"role": "user", "content": prompt}],
                         temperature=0.1
-                    ).choices[0].message.content
-
-                    # 🔥 2. 解析逻辑
-                    parsed = []
-                    # 预处理：把中文冒号和换行符都统一
-                    clean_res = res.replace("：", ":").replace("\n", "|").replace("，", ",")
+                    )
+                    res = res_obj.choices[0].message.content
                     
-                    for block in clean_res.split("|"):
-                        if ":" in block:
-                            cat, words = block.split(":", 1)
-                            cat = cat.strip()
-                            
-                            # 模糊匹配：只要 AI 返回的分类包含我们的 Key 就算对
-                            # 例如 AI 返回 "Subject(主体)" 也能识别出 "Subject"
+                    parsed = []
+                    
+                    # 🔥 尝试 JSON 解析 (最稳的方法)
+                    try:
+                        # 1. 清理一下 AI 可能带的 Markdown 标记
+                        clean_json = res.replace("```json", "").replace("```", "").strip()
+                        data = json.loads(clean_json)
+                        
+                        # 2. 遍历 JSON 转为我们的格式
+                        for cat, words in data.items():
+                            # 模糊匹配 Key (防止 AI 写成 subjects 小写等)
                             target_key = None
                             for k in WAREHOUSE:
-                                if k.lower() in cat.lower(): 
+                                if k.lower() == cat.lower() or k.lower() in cat.lower():
                                     target_key = k
                                     break
                             
-                            if target_key:
-                                for w in words.split(","):
-                                    w = w.strip()
-                                    # 过滤掉空字符串和奇怪的符号
-                                    if w and w not in [".", "。", "无", "none"]:
-                                        parsed.append({"cat": target_key, "val": w})
-                    
+                            if target_key and isinstance(words, list):
+                                for w in words:
+                                    if w and isinstance(w, str):
+                                        parsed.append({"cat": target_key, "val": w.strip()})
+                                        
+                    except json.JSONDecodeError:
+                        # 🚑 兜底方案：如果 JSON 解析失败，回退到原来的文本切割
+                        st.warning("⚠️ JSON 解析失败，尝试强制切割...")
+                        clean_res = res.replace("：", ":").replace("\n", "|").replace("，", ",")
+                        for block in clean_res.split("|"):
+                            if ":" in block:
+                                parts = block.split(":", 1)
+                                if len(parts) == 2:
+                                    cat, words = parts
+                                    cat = cat.strip()
+                                    target_key = None
+                                    for k in WAREHOUSE:
+                                        if k.lower() in cat.lower(): 
+                                            target_key = k
+                                            break
+                                    if target_key:
+                                        for w in words.split(","):
+                                            w = w.strip()
+                                            if w: parsed.append({"cat": target_key, "val": w})
+
                     st.session_state.ai_results = parsed
 
-                    # 🔥 3. 调试兜底：如果解析完是空的，把 AI 原话说出来
+                    # 调试信息：如果还是空的，把原因显示出来
                     if not parsed:
-                        st.warning("🤔 AI 回复了，但格式没对上，无法自动提取。")
-                        with st.expander("查看 AI 原始回复 (用于排查)", expanded=True):
-                            st.write(res)
+                        st.error("❌ 提取结果为空！AI 可能拒绝了回答或格式错乱。")
+                        with st.expander("查看 AI 原始回复"):
+                            st.text(res)
 
                 except Exception as e:
                     st.error(f"❌ 请求失败: {e}")
