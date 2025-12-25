@@ -38,10 +38,14 @@ user_input = st.text_area("Prompt Queue", value=default_text, height=300, key="m
 
 # --- Options ---
 st.divider()
-col_check, col_btn = st.columns([1, 2])
-with col_check:
-    need_white_bg = st.checkbox("Production Mode: Auto White Background", value=False)
 
+# 使用固定比例并开启强制垂直居中对齐
+col_check, col_btn = st.columns([1.2, 2], vertical_alignment="center")
+
+with col_check:
+    # 移除多余的间距，让它贴近中轴
+    need_white_bg = st.checkbox("Production Mode: Auto White Background", value=False)
+    
 # --- Generation Logic ---
 with col_btn:
     # Primary button (Deep Grey Style)
