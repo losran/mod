@@ -1,10 +1,15 @@
 # engine_manager.py
 import streamlit as st
-import requests, base64
+import requests
+import base64
 
-# 1. 仓库定义移到这里，方便所有页面调用
+# ===========================
+# 1. 基础配置
+# ===========================
+# 🚨 请确认你的 GitHub 仓库名！
+# 如果是 tattoo-ai-tool 请改为 "losran/tattoo-ai-tool"
+REPO = "losran/mod" 
 GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
-REPO = "losran/mod"
 
 WAREHOUSE = {
     "Subject": "data/subjects.txt",
@@ -19,7 +24,9 @@ WAREHOUSE = {
     "Accent": "data/styles_accent.txt",
 }
 
-# 2. 数据获取函数
+# ===========================
+# 2. 核心函数
+# ===========================
 @st.cache_data(ttl=600)
 def fetch_repo_data():
     data_map = {}
@@ -27,7 +34,7 @@ def fetch_repo_data():
     for k, path in WAREHOUSE.items():
         try:
             url = f"https://api.github.com/repos/{REPO}/contents/{path}"
-            r = requests.get(url, headers=headers)
+            r = requests.get(url, headers=headers, timeout=5)
             if r.status_code == 200:
                 content = base64.b64decode(r.json()["content"]).decode()
                 data_map[k] = [i.strip() for i in content.splitlines() if i.strip()]
@@ -37,13 +44,41 @@ def fetch_repo_data():
             data_map[k] = []
     return data_map
 
-# 3. 初始化 Session 状态 (确保数据存在)
+def save_data(path, data_list):
+    url = f"https://api.github.com/repos/{REPO}/contents/{path}"
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    try:
+        old_resp = requests.get(url, headers=headers).json()
+        sha = old_resp.get("sha")
+        content_str = "\n".join(sorted(list(set(data_list))))
+        b64_content = base64.b64encode(content_str.encode()).decode()
+        
+        payload = {
+            "message": "update via engine",
+            "content": b64_content,
+            "sha": sha
+        }
+        requests.put(url, headers=headers, json=payload)
+        return True
+    except Exception as e:
+        print(f"Save error: {e}")
+        return False
+
 def init_data():
     if "db_all" not in st.session_state:
         st.session_state.db_all = fetch_repo_data()
 
-# 4. 渲染通用侧边栏 (核心组件)
+# ===========================
+# 3. 侧边栏渲染 (Render Sidebar)
+# ===========================
 def render_sidebar():
+    # 尝试应用样式
+    try:
+        from style_manager import apply_pro_style
+        apply_pro_style()
+    except ImportError:
+        pass
+
     init_data()
     
     with st.sidebar:
@@ -51,10 +86,11 @@ def render_sidebar():
         st.markdown("---")
         st.markdown("### 📊 实时库存")
         
-        # 显示数据
         if "db_all" in st.session_state:
             for k, v in st.session_state.db_all.items():
-                st.markdown(f"**{k}**: `{len(v)}`")
+                st.markdown(f"**{k}** : `{len(v)}`")
+        else:
+            st.warning("数据同步中...")
         
         st.markdown("---")
         if st.button("🔄 全局刷新", use_container_width=True):
